@@ -11,7 +11,6 @@ load_dotenv()
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 
--
 # In[ ]:
 
 
