@@ -168,7 +168,7 @@ being called directly from Streamlit.
 
 ## Phase 1 completion checklist
 
-[ ] Domain dataclasses added
+[x] Domain dataclasses added
 [ ] Application interfaces added
 [ ] TrainModel use case added
 [ ] PredictMatch use case added

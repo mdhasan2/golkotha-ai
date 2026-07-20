@@ -521,6 +521,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "notebook" },
+    { name = "pytest" },
     { name = "python-dotenv" },
 ]
 
@@ -537,6 +538,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "notebook", specifier = ">=7.6.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
 ]
 
