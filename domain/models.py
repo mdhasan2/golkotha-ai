@@ -68,26 +68,3 @@ class MatchPrediction:
                 return prediction.probability
 
         raise KeyError(f"Prediction does not contain label {label}.")
-
-
-
-data = {
-    "shots": 12,
-    "possession": 58.5,
-    "passes": 421.0
-}
-
-# features = MatchFeatures(data)
-# features.to_dict()
-# print(features)
-# checked_features = features.from_dict(data)
-# print(checked_features)
-proba1 = PredictionProbability(1, 78)
-proba2 = PredictionProbability(0, 25)
-
-prediction = MatchPrediction(
-    probabilities=(proba1, proba2),
-    predicted_label=1,
-)
-
-print(prediction.probability_for(3))
