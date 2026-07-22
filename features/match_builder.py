@@ -1,4 +1,4 @@
-class MatchFeatures:
+class MatchBuilder:
 
     def build(self, home, away):
 

@@ -1,110 +1,108 @@
 
-from dotenv import load_dotenv
 import os
-import json
 import pandas as pd
+import joblib
+
+from app.container import(
+    build_training_container,
+    build_prediction_container,
+)
+
+
 from api import SportsAPI
 from enums import Sport
+
+from dotenv import load_dotenv
+
 from features.player_forms import PlayerForms
 from features.team_features import TeamFeatures
-from features.match_features import MatchFeatures
+from features.match_builder import MatchBuilder
 from ml.dataset_builder import DatasetBuilder
 from ml.predictor import PredictionService
 from ml.trainer import ModelTrainer
-from app.streamlit_app import StreamlitService
+from presentation.streamlit_app import StreamlitService
+
+from domain.models import MatchFeatures
+
 
 
 load_dotenv()
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
+SEASON = 2026
 
-def main(): 
-    football = SportsAPI(API_KEY, Sport.FOOTBALL)
-   
-    player_forms = PlayerForms()
-    team_features = TeamFeatures()
-    match_features = MatchFeatures()
+def load_fixture_data(api: SportsAPI):
+    """
+    Keep the existing API or cached-data loading logic here.
+    """
     
+    league = api.leagues.world_cup()
+    LEAGUE_ID = league["league"]["id"]
+
+    return api.fixtures.by_league(LEAGUE_ID, SEASON)
+
+def build_dataset(api: SportsAPI) -> pd.DataFrame:
     
-    #print(json.dumps(football.leages.world_cup(), indent=2))
-    #print(json.dumps(football.teams.ids(1, 2026), indent=2))
-    #print(json.dumps(football.teams.by_name('Argentina', 1, 2026), indent=2))
-    #print(json.dumps(football.players.squad(ARGENTINA_ID), indent=2))
+    fixtures = load_fixture_data(api)
     
-
-    league_id = football.leagues.world_cup()
-    LEAGUE_ID = league_id["league"]["id"]
-    SEASON = 2026
-
-    argentina_id = football.teams.by_name('Argentina', LEAGUE_ID, SEASON)
-    ARGENTINA_ID = argentina_id["team"]["id"]
-    
-    print(LEAGUE_ID, ARGENTINA_ID, SEASON)
-
-    # Download squad
-    players_ar = football.players.squad(ARGENTINA_ID)
-
-
-    # Engineer player features
-    player_forms_ar = []
-  
-    for player in players_ar:
-        stats = football.players.statistics(player["id"], SEASON, LEAGUE_ID)
-        player_forms_ar.append(player_forms.build(stats))
-
-    # Aggregate team
-    argentina = team_features.build(player_forms_ar)
-
-    # Repeat for spain
-    spain_id = football.teams.by_name('Spain', LEAGUE_ID, SEASON)
-    SPAIN_ID = spain_id["team"]["id"]
-    
-    # Download squad
-    players_sp = football.players.squad(SPAIN_ID)
-
-
-    # Engineer player features
-    player_forms_sp = []
-  
-    for player in players_sp:
-        stats = football.players.statistics(player["id"], SEASON, LEAGUE_ID)
-        player_forms_sp.append(player_forms.build(stats))
-
-    # Aggregate team
-    spain = team_features.build(player_forms_sp)
-
-    # print(json.dumps(argentina , indent=2))
-    # print(json.dumps(spain , indent=2))
-
-    # Comapare teams
-    match_features = match_features.build(argentina, spain)
-    #print(json.dumps(match , indent=2))
-
-    # Explore fixtures
-    #fixtures_list = football.fixtures.list(LEAGUE_ID, SEASON)
-    #print(json.dumps(fixtures_list, indent=2))
-    #fixtures_by_name = football.fixtures.by_team(ARGENTINA_ID,SEASON)
-    #print(json.dumps(fixtures_by_name, indent=2))
-
-    # Build the dataset
     builder = DatasetBuilder(
-        api=football,
+        api=api,
         player_forms = PlayerForms(),
         team_features = TeamFeatures(),
-        match_features = MatchFeatures(),
+        match_features = MatchBuilder(),
     )
 
-    fixtures_by_league = football.fixtures.by_league(LEAGUE_ID, SEASON)
+    dataset = builder.build(fixtures)
 
-    #dataset = builder.build(fixtures_by_league)
+    dataset.to_csv(
+        "data/worldcup_training.csv",
+        index=False,
+    )
 
-    # dataset.to_csv(
-    #     "data/worldcup_training.csv",
-    #     index=False,
-    # )
+    return dataset
 
-    dataset = pd.read_csv("data/worldcup_training.csv")
+def build_match_features(
+        api: SportsAPI,
+        home_team: str,
+        away_team: str,
+    ):
 
+    league = api.leagues.world_cup()
+    league_id = league["league"]["id"]    
+
+    player_builder = PlayerForms()
+    team_builder = TeamFeatures()
+    match_builder = MatchBuilder()
+
+    def build_team(team_name):
+
+        team = api.teams.by_name(team_name, league_id, SEASON)
+        team_id = team["team"]["id"]
+
+        # Download squad
+        squad = api.players.squad(team_id)
+
+        # Engineer player features
+        player_featurs = []
+    
+        for player in squad:
+            stats = api.players.statistics(player["id"], SEASON, league_id)
+            player_featurs.append(player_builder.build(stats))
+
+        return team_builder.build(player_featurs)
+        
+
+    home = build_team(home_team)
+    away = build_team(away_team)
+
+    features = match_builder.build(home, away)
+    print(type(features))
+    print(features)
+    
+
+    return MatchFeatures.from_dict(features)
+
+def train_model(dataset: pd.DataFrame):
     dataset = dataset.dropna(subset=["target"])
 
     # Remove non-feature columns
@@ -120,20 +118,53 @@ def main():
 
     y = dataset["target"].astype(int)
 
-    trainer = ModelTrainer()
+    # trainer = ModelTrainer()
 
-    model = trainer.train(X, y)
+    training_container = build_training_container()
 
-    # Predict
-    predictor = PredictionService()
+    return training_container.train_model.execute(X, y,)
 
-    app = StreamlitService(predictor)
 
-    app.visualize(match_features)
+def main() -> None:
 
+    football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
     
+    # dataset = build_dataset(football_api)
 
+    # dataset.to_csv(
+    #     "data/worldcup_training.csv",
+    #     index=False,
+    # )
 
+    dataset = pd.read_csv("data/worldcup_training.csv")
+
+    model = train_model(dataset)
+
+    print(model)
+
+    model = joblib.load("models/new_xgboost.pkl")
+
+    prediction_container = build_prediction_container(model)
+
+    print(prediction_container)
+
+    features = build_match_features(
+        football_api,
+        "Argentina",
+        "Spain",
+    )
+
+    print(features)
+
+    # predictor = PredictionService(model)
+
+    # app = StreamlitService(predictor)
+
+    app = StreamlitService(prediction_container.predict_match,)
+
+    # print("Reached visualize")
+
+    app.visualize(features)
 
 if __name__ == "__main__":
     main()    

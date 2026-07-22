@@ -169,18 +169,18 @@ being called directly from Streamlit.
 ## Phase 1 completion checklist
 
 [x] Domain dataclasses added
-[ ] Application interfaces added
-[ ] TrainModel use case added
-[ ] PredictMatch use case added
-[ ] Existing XGBoost trainer wrapped
-[ ] Existing predictor wrapped
-[ ] Streamlit no longer calls predict_proba directly
-[ ] NumPy float values converted to Python float
+[x] Application interfaces added
+[x] TrainModel use case added
+[x] PredictMatch use case added
+[x] Existing XGBoost trainer wrapped
+[x] Existing predictor wrapped
+[x] Streamlit no longer calls predict_proba directly
+[x] NumPy float values converted to Python float
 [ ] Feature order preserved
-[ ] Existing numeric labels preserved
-[ ] Old imports continue working through adapters
-[ ] Unit tests pass
-[ ] Old and new probability outputs match
-[ ] No attack logic added
-[ ] No SHAP logic added
-[ ] No RAG logic added
+[x] Existing numeric labels preserved
+[x] Old imports continue working through adapters
+[x] Unit tests pass
+[x] Old and new probability outputs match
+[x] No attack logic added
+[x] No SHAP logic added
+[x] No RAG logic added
