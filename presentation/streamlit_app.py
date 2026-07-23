@@ -45,3 +45,5 @@ class StreamlitService:
                 f"{spain_probability:.2%}",
             )
             st.progress(float(spain_probability))
+
+    def security_question(self) -> str

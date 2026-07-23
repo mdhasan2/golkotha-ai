@@ -1,5 +1,5 @@
 from typing import Any
-from application.interfaces import ModelTrainerPort
+from application.ports.interfaces import ModelTrainerPort
 
 import pandas as pd
 

@@ -1,5 +1,5 @@
 
-from application.interfaces import MatchPredictorPort
+from application.ports.interfaces import MatchPredictorPort
 from domain.models import MatchFeatures, MatchPrediction
 
 class PredictMatch:
