@@ -3,16 +3,29 @@ import streamlit as st
 
 from application.use_cases.predict_match import PredictMatch
 from domain.models import MatchFeatures
+from domain.rag_models import GroundedRecommendation
 
 class StreamlitService:
-
-    # def __init__(self, predictor):
-
-    #     self.predictor = predictor
 
     def __init__(self, predict_match: PredictMatch,) -> None: 
 
         self._predict_match = predict_match
+    
+    def security_question(self) -> str:
+            return st.text_area(
+                "Ask an AI security question",
+                value=(
+                    "What security, validation, mnitoring, and "
+                    "governance controls should be implemented "
+                    "before deploying this model?"
+                ),
+            )
+        
+    def display_security_recommendations(
+              self,
+              result: GroundedRecommendation,
+    ) -> None:
+         # You are here
 
     def visualize(self, features:MatchFeatures,) -> None:
         
@@ -46,4 +59,4 @@ class StreamlitService:
             )
             st.progress(float(spain_probability))
 
-    def security_question(self) -> str
+   
