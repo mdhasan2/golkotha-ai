@@ -1,4 +1,60 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any, Mapping
+
+@dataclass(frozen=True)
+class PredictionContext:
+    """
+    Information currently available from the base ML workflow.
+
+    Later phaes can extend this context with SHAP summaries and adversarial-attack results.
+    """
+
+    model_name: str
+    model_type: str
+    model_version: str | None
+    
+    home_team: str
+    away_team: str
+
+    predicted_label: int
+    predicted_team: str
+    confidence: float
+
+    class_probabilities: Mapping[str, float]
+
+    feature_values: Mapping[str, float]
+
+    user_question: str | None = None
+
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True)
+class DocumentChunk:
+    chunk_id: str
+    document_id: str
+
+    text: str
+    title: str
+
+    source_name: str
+    source_url: str
+    
+    chunk_index: int
+
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True)
+class RetrivedChunk:
+    chunk: DocumentChunk
+    score: float
+
+@dataclass(frozen=True)
+class Citation:
+    citation_id: str
+    title: str
+    source_name: str
+    source_url: str
+    chunk_id: str
 
 @dataclass(frozen=True)
 class GroundedRecommendation:

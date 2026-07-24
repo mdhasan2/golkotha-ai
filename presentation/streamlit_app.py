@@ -4,6 +4,7 @@ import streamlit as st
 from application.use_cases.predict_match import PredictMatch
 from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
+from mapp
 
 class StreamlitService:
 
@@ -25,7 +26,20 @@ class StreamlitService:
               self,
               result: GroundedRecommendation,
     ) -> None:
-         # You are here
+        st.subheader("AI Security Guidance")
+
+        st.metric(
+            "Current Security Assessment",
+            result.risk_level.upper(),
+        )
+
+        st.write(result.summary)
+
+        st.markdown("### Current Findings")
+
+        for finding in result.findings:
+            st.markdown(f"-{finding}")
+              
 
     def visualize(self, features:MatchFeatures,) -> None:
         
@@ -39,6 +53,33 @@ class StreamlitService:
             prediction = self._predict_match.execute(features)
 
             print(prediction)
+
+            context = PredictionContextMapper().map(
+                 model_name="GolKotha XGBoost",
+                 model_type="XGBoostClassifier",
+                 model_version="1.0",
+                 home_team="Argentian",
+                 away_team="Spain",
+                 predicted_label=prediction.predicted_label,
+                 predicted_team="Argentina",
+                 confidence=prediction.probability_for(
+                      prediction.predicted_label
+                 ),
+                 class_probabilities={
+                      "Draw": prediction.probability_for(0),
+                      "Argentina": prediction.probability_for(1),
+                      "Spain": prediction.probability_for(2),
+                 },
+                 feature_values=features.to_dict(),
+                 user_question=(
+                      "What should I implement to make this model "
+                      "more secure and trustworthy?"
+                 ),
+                 recommendations = (
+                    generate_security_recommendations.
+                 )
+
+            )
 
             # argentina_prob = probability[1]
             # spain_prob = probability[0]
