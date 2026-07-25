@@ -12,4 +12,17 @@ class VectorStorePort(protocol):
     ) -> None:
         ...
 
+    def search(
+        self,
+        query_embedding: Sequence[float],
+        limit: int = 8,
+        filters: dict[str, str] | None = None,
+    ) -> list[RetrivedChunk]:
+        ...
+
+    def count(self) -> int:
+        ...
+
+    def clear(self) -> None:
+        ...
     
