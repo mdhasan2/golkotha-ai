@@ -1,9 +1,9 @@
 from collections.abc import Sequence
-from typing import protocol
+from typing import Protocol
 
 from domain.rag_models import DocumentChunk, RetrivedChunk
 
-class VectorStorePort(protocol):
+class VectorStorePort(Protocol):
 
     def add(
         self,

@@ -1,0 +1,8 @@
+sources:
+  - id: mitre-atlas-data
+    title: MITRE ATLAS Data
+    publisher: MITRE
+    category: adversarial-threat-knowledge
+    format: yaml
+    url:  https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/ATLAS.yaml
+    local_path: knowledge/raw/mitre_atlas/ATLAS.yaml

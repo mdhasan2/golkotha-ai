@@ -2,6 +2,21 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 @dataclass(frozen=True)
+class KnowledgeDocument:
+    """
+    One normalized source document before chunking.
+    """
+
+    document_id: str
+    title: str
+    text: str
+    source_name: str
+    source_url: str
+    version: str | None = None
+    published_at: str | None = None
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True)
 class PredictionContext:
     """
     Information currently available from the base ML workflow.
