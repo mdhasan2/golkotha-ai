@@ -34,3 +34,15 @@ htmlcov/
 
 # UV
 .python-version
+
+# ChromaDB
+knowledge/vector_store/
+
+# SQLite database (if present)
+*.sqlite3
+
+# Write-ahead logs
+*.sqlite
+*.db
+*.wal
+*.shm
