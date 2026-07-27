@@ -23,8 +23,20 @@ from ml.trainer import ModelTrainer
 from presentation.streamlit_app import StreamlitService
 
 from domain.models import MatchFeatures
+from domain.rag_models import GroundedRecommendation
 
+from application.mapper.prediction_context_mapper import PredictionContextMapper
+from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 
+from infrastructure.rag.security_query_builder import (
+    SecurityQueryBuilder
+)
+from infrastructure.rag.sentence_transformer_embeddings import (
+    SentenceTransformerEmbeddingService
+)
+from infrastructure.rag.chroma_vector_store import (
+    ChromaVectorStore
+)
 
 load_dotenv()
 
@@ -140,13 +152,13 @@ def main() -> None:
 
     model = train_model(dataset)
 
-    print(model)
+    # print(model)
 
     model = joblib.load("models/new_xgboost.pkl")
 
     prediction_container = build_prediction_container(model)
 
-    print(prediction_container)
+    # print(prediction_container)
 
     features = build_match_features(
         football_api,
@@ -160,11 +172,52 @@ def main() -> None:
 
     # app = StreamlitService(predictor)
 
-    app = StreamlitService(prediction_container.predict_match,)
+    # app = StreamlitService(prediction_container.predict_match,)
 
     # print("Reached visualize")
 
-    app.visualize(features)
+    # app.visualize(features)
+
+    prediction = prediction_container.predict_match.execute(features)
+    
+    print(prediction)
+
+    context = PredictionContextMapper().map(
+            model_name="GolKotha XGBoost",
+            model_type="XGBoostClassifier",
+            model_version="1.0",
+            home_team="Argentian",
+            away_team="Spain",
+            predicted_label=prediction.predicted_label,
+            predicted_team="Argentina",
+            confidence=prediction.probability_for(
+                prediction.predicted_label
+            ),
+            class_probabilities={
+                # "Draw": prediction.probability_for(0),
+                "Spain": prediction.probability_for(0),
+                "Argentina": prediction.probability_for(1),
+                # "Spain": prediction.probability_for(2),
+            },
+            feature_values=features.to_dict(),
+            user_question=(
+                "What should I implement to make this model "
+                "more secure and trustworthy?"
+            ),
+    )
+    print(context)
+    query_builder = SecurityQueryBuilder()
+    embeddings = SentenceTransformerEmbeddingService()
+    vector_store = ChromaVectorStore()
+    _generate_security_recommendations=GenerateSecurityRecommendations(
+        embedding_service=embeddings,
+        vector_store=vector_store,
+        query_builder=query_builder,
+    )
+    recommendations = (
+        _generate_security_recommendations.execute(context)
+    )
+    
 
 if __name__ == "__main__":
     main()    

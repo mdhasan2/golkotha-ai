@@ -1,10 +1,11 @@
 
 import streamlit as st
 
+from application.mapper.prediction_context_mapper import PredictionContextMapper
+from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 from application.use_cases.predict_match import PredictMatch
 from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
-from mapp
 
 class StreamlitService:
 
@@ -75,11 +76,11 @@ class StreamlitService:
                       "What should I implement to make this model "
                       "more secure and trustworthy?"
                  ),
-                 recommendations = (
-                    generate_security_recommendations.
-                 )
-
             )
+            self._generate_security_recommendations=GenerateSecurityRecommendations()
+            recommendations = (
+                    self._generate_security_recommendations.execute(context)
+                 )
 
             # argentina_prob = probability[1]
             # spain_prob = probability[0]

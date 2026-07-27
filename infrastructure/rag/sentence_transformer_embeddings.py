@@ -33,3 +33,19 @@ class SentenceTransformerEmbeddingService:
             vector.astype(float).tolist()
             for vector in vectors
         ]
+    def embed_query(
+        self,
+        text: str,
+    ) -> list[float]:
+        # print("you are here")
+        # print(text)
+        if not text.strip():
+            raise ValueError(
+                "Query text cannot be empty"
+            )
+        vector = self._model.encode(
+            text,
+            normalize_embeddings=True,
+            show_progress_bar=True,
+        )
+        return vector.astype(float).tolist()

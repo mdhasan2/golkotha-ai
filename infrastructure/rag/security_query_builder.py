@@ -1,6 +1,6 @@
 from domain.rag_models import PredictionContext
 
-class SecuirityQueryBuilder:
+class SecurityQueryBuilder:
 
     def build(
         self,

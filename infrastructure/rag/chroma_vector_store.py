@@ -41,6 +41,13 @@ class ChromaVectorStore:
                 for chunk in chunks
             ],
         )
+
+    def search(
+        self,
+        query_embedding: Sequence[float],
+    ):
+        print("You are here")
+
     def clear(self) -> None:
         self._client.delete_collection(
             self._collection_name
@@ -49,6 +56,7 @@ class ChromaVectorStore:
             name=self._collection_name,
             metadata={"hnsw:space": "cosine"},
         )
+        
     @staticmethod
     def _serialize_metadata(
         chunk: DocumentChunk,
