@@ -208,7 +208,10 @@ def main() -> None:
     print(context)
     query_builder = SecurityQueryBuilder()
     embeddings = SentenceTransformerEmbeddingService()
-    vector_store = ChromaVectorStore()
+    vector_store = ChromaVectorStore(
+        persist_directory="knowledge/vector_store",
+        collection_name="golkotha_ai_security"
+    )
     _generate_security_recommendations=GenerateSecurityRecommendations(
         embedding_service=embeddings,
         vector_store=vector_store,

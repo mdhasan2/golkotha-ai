@@ -40,10 +40,11 @@ class GenerateSecurityRecommendations:
             self._embedding_service.embed_query(query)
         )
 
+        print("Query:", query)
         results = self._vector_store.search(
             query_embedding=embedding,
         )
 
-        print(results)
+        
 
         

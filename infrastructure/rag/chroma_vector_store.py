@@ -46,7 +46,34 @@ class ChromaVectorStore:
         self,
         query_embedding: Sequence[float],
     ):
-        print("You are here")
+        print("Embedding type:", type(query_embedding))
+        print("Embedding length:",len(query_embedding))
+        print("Frist 5 values:", query_embedding[:5])
+
+        result = self._collection.query(
+            query_embeddings=[list(query_embedding)],
+            n_results=5,
+            include=[
+                "documents",
+                "metadatas",
+                "distances",
+            ],
+        )
+
+        ids = result.get("ids", [[]])[0]
+        documents = result.get("documents", [[]])[0]
+        metadatas = result.get("metadatas", [[]])[0]
+        distances = result.get("distances", [[]])[0]
+
+        for chunk_id, text, metadata, distance in zip(
+            ids,
+            documents,
+            metadatas,
+            distances,
+            strict=True,
+        ):
+             print(metadata)
+        
 
     def clear(self) -> None:
         self._client.delete_collection(
