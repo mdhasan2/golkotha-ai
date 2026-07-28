@@ -28,6 +28,10 @@ from domain.rag_models import GroundedRecommendation
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 
+from infrastructure.rag.security_prompt_builder import (
+    SecurityPromptBuilder
+)
+
 from infrastructure.rag.security_query_builder import (
     SecurityQueryBuilder
 )
@@ -166,7 +170,7 @@ def main() -> None:
         "Spain",
     )
 
-    print(features)
+    # print(features)
 
     # predictor = PredictionService(model)
 
@@ -180,7 +184,7 @@ def main() -> None:
 
     prediction = prediction_container.predict_match.execute(features)
     
-    print(prediction)
+    # print(prediction)
 
     context = PredictionContextMapper().map(
             model_name="GolKotha XGBoost",
@@ -205,21 +209,29 @@ def main() -> None:
                 "more secure and trustworthy?"
             ),
     )
-    print(context)
+    # print(context)
     query_builder = SecurityQueryBuilder()
     embeddings = SentenceTransformerEmbeddingService()
+    prompt_builder = SecurityPromptBuilder()
+
+    
     vector_store = ChromaVectorStore(
         persist_directory="knowledge/vector_store",
         collection_name="golkotha_ai_security"
     )
+
+    
+
     _generate_security_recommendations=GenerateSecurityRecommendations(
         embedding_service=embeddings,
         vector_store=vector_store,
         query_builder=query_builder,
+        prompt_builder=prompt_builder,
     )
     recommendations = (
         _generate_security_recommendations.execute(context)
     )
+
     
 
 if __name__ == "__main__":

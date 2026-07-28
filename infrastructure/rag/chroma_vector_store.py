@@ -45,10 +45,10 @@ class ChromaVectorStore:
     def search(
         self,
         query_embedding: Sequence[float],
-    ):
-        print("Embedding type:", type(query_embedding))
-        print("Embedding length:",len(query_embedding))
-        print("Frist 5 values:", query_embedding[:5])
+    ) -> list[RetrivedChunk]:
+        # print("Embedding type:", type(query_embedding))
+        # print("Embedding length:",len(query_embedding))
+        # print("Frist 5 values:", query_embedding[:5])
 
         result = self._collection.query(
             query_embeddings=[list(query_embedding)],
@@ -65,6 +65,8 @@ class ChromaVectorStore:
         metadatas = result.get("metadatas", [[]])[0]
         distances = result.get("distances", [[]])[0]
 
+        retrieved: list[RetrivedChunk] = []
+
         for chunk_id, text, metadata, distance in zip(
             ids,
             documents,
@@ -72,7 +74,39 @@ class ChromaVectorStore:
             distances,
             strict=True,
         ):
-             print(metadata)
+            metadata = metadata or {}
+
+            chunk = DocumentChunk(
+                chunk_id=chunk_id,
+                document_id=str(
+                    metadata.get("document_id", "")
+                ),
+                text=text or "",
+                title=str(metadata.get("title", "")),
+                source_name=str(
+                    metadata.get("source_name", "" )
+                ),
+                source_url=str(
+                    metadata.get("source_url", "")
+                ),
+                chunk_index=int(
+                    metadata.get("chunk_index", 0)
+                ),
+                metadata=metadata,
+            )
+
+            similarity = max(
+                0.0,
+                min(1.0, 1.0 - float(distance)),
+            )
+
+            retrieved.append(
+                RetrivedChunk(
+                    chunk=chunk,
+                    score=similarity,
+                )
+            )
+        return retrieved
         
 
     def clear(self) -> None:
@@ -83,7 +117,7 @@ class ChromaVectorStore:
             name=self._collection_name,
             metadata={"hnsw:space": "cosine"},
         )
-        
+
     @staticmethod
     def _serialize_metadata(
         chunk: DocumentChunk,

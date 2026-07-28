@@ -2,8 +2,14 @@ from application.ports.embedding_port import EmbeddingPort
 from application.ports.vector_store_port import VectorStorePort
 
 from domain.rag_models import (
+    Citation,
+    GroundedRecommendation,
     PredictionContext,
     RetrivedChunk,
+)
+
+from infrastructure.rag.security_prompt_builder import (
+    SecurityPromptBuilder,
 )
 
 from infrastructure.rag.security_query_builder import (
@@ -16,23 +22,46 @@ class GenerateSecurityRecommendations:
         self,
         embedding_service: EmbeddingPort,
         vector_store: VectorStorePort,
+        llm
         query_builder: SecurityQueryBuilder,
+        prompt_builder: SecurityPromptBuilder,
     ) -> None:
         self._embedding_service = embedding_service
         self._vector_store = vector_store
+        self._llm 
         self._query_builder = query_builder
+        self._prompt_builder = prompt_builder
     def execute(
         self,
         context: PredictionContext,
+        retrieval_limit: int = 8,
+        minimum_score: float = 0.20,
     )-> None:
         retrieved = self._retrieve(
             context=context,
+            limit=retrieval_limit,
+            minimum_score=minimum_score,
         )
-        # pass
+
+        if not retrieved:
+            raise RuntimeError(
+                "No sufficently relevant security guidance "
+                "was retrieved."
+            )
+
+        system_prompt, user_prompt= self._prompt_builder.build(
+            context=context,
+            retrieved=retrieved,
+        )
+        # print(f"System Prompt: \n{system_prompt}\n, User Prompt: \n{user_prompt}")
+
+        raw_response = self._l
         
     def _retrieve(
         self,
         context: PredictionContext,
+        limit: int,
+        minimum_score: float,
     ) -> list[RetrivedChunk]:
         query = self._query_builder.build(context)
         # print(query)
@@ -40,11 +69,14 @@ class GenerateSecurityRecommendations:
             self._embedding_service.embed_query(query)
         )
 
-        print("Query:", query)
+        # print("Query:", query)
         results = self._vector_store.search(
             query_embedding=embedding,
         )
-
+        return [
+            result
+            for result in results
+        ]
         
 
         
