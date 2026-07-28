@@ -6,6 +6,7 @@ import joblib
 from app.container import(
     build_training_container,
     build_prediction_container,
+    build_llm_container,
 )
 
 
@@ -213,14 +214,14 @@ def main() -> None:
     query_builder = SecurityQueryBuilder()
     embeddings = SentenceTransformerEmbeddingService()
     prompt_builder = SecurityPromptBuilder()
-
+    llm_container = build_llm_container()
     
     vector_store = ChromaVectorStore(
         persist_directory="knowledge/vector_store",
         collection_name="golkotha_ai_security"
     )
 
-    
+
 
     _generate_security_recommendations=GenerateSecurityRecommendations(
         embedding_service=embeddings,

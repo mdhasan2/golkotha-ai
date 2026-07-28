@@ -1,4 +1,5 @@
 from application.ports.embedding_port import EmbeddingPort
+from application.ports.llm_port import LLMPort
 from application.ports.vector_store_port import VectorStorePort
 
 from domain.rag_models import (
@@ -22,13 +23,13 @@ class GenerateSecurityRecommendations:
         self,
         embedding_service: EmbeddingPort,
         vector_store: VectorStorePort,
-        llm
+        llm: LLMPort,
         query_builder: SecurityQueryBuilder,
         prompt_builder: SecurityPromptBuilder,
     ) -> None:
         self._embedding_service = embedding_service
         self._vector_store = vector_store
-        self._llm 
+        self._llm = llm
         self._query_builder = query_builder
         self._prompt_builder = prompt_builder
     def execute(
@@ -55,7 +56,10 @@ class GenerateSecurityRecommendations:
         )
         # print(f"System Prompt: \n{system_prompt}\n, User Prompt: \n{user_prompt}")
 
-        raw_response = self._l
+        raw_response = self._llm.generate(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
         
     def _retrieve(
         self,
