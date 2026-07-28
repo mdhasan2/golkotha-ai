@@ -60,7 +60,9 @@ class GenerateSecurityRecommendations:
             system_prompt=system_prompt,
             user_prompt=user_prompt,
         )
-        
+
+        print(f"LLM Response: \n{raw_response}\n")
+
     def _retrieve(
         self,
         context: PredictionContext,

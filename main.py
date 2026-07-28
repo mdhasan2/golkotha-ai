@@ -216,6 +216,11 @@ def main() -> None:
     prompt_builder = SecurityPromptBuilder()
     llm_container = build_llm_container()
     
+    print(llm_container)
+    print(type(llm_container))
+    print(llm_container.llm)
+    print(type(llm_container.llm))
+
     vector_store = ChromaVectorStore(
         persist_directory="knowledge/vector_store",
         collection_name="golkotha_ai_security"
@@ -226,6 +231,7 @@ def main() -> None:
     _generate_security_recommendations=GenerateSecurityRecommendations(
         embedding_service=embeddings,
         vector_store=vector_store,
+        llm=llm_container.llm,
         query_builder=query_builder,
         prompt_builder=prompt_builder,
     )
