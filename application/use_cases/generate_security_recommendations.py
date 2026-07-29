@@ -9,6 +9,7 @@ from domain.rag_models import (
     RetrivedChunk,
 )
 
+from infrastructure.rag.citation_parser import CitationParser
 from infrastructure.rag.security_prompt_builder import (
     SecurityPromptBuilder,
 )
@@ -26,18 +27,20 @@ class GenerateSecurityRecommendations:
         llm: LLMPort,
         query_builder: SecurityQueryBuilder,
         prompt_builder: SecurityPromptBuilder,
+        citation_parser: CitationParser,
     ) -> None:
         self._embedding_service = embedding_service
         self._vector_store = vector_store
         self._llm = llm
         self._query_builder = query_builder
         self._prompt_builder = prompt_builder
+        self._citation_parser = citation_parser
     def execute(
         self,
         context: PredictionContext,
         retrieval_limit: int = 8,
         minimum_score: float = 0.20,
-    )-> None:
+    )-> GroundedRecommendation:
         retrieved = self._retrieve(
             context=context,
             limit=retrieval_limit,
@@ -61,7 +64,12 @@ class GenerateSecurityRecommendations:
             user_prompt=user_prompt,
         )
 
-        print(f"LLM Response: \n{raw_response}\n")
+        # print(f"LLM Response: \n{raw_response}\n")
+
+        self._citation_parser.parse(
+            raw_response=raw_response,
+            retrieved=retrieved,
+        )
 
     def _retrieve(
         self,
@@ -83,6 +91,12 @@ class GenerateSecurityRecommendations:
             result
             for result in results
         ]
+
+    # @staticmethod
+    # def _to_result(
+    #     raw_response: str,
+    # ) -> GroundedRecommendation:
+        
         
 
         

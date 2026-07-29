@@ -29,6 +29,7 @@ from domain.rag_models import GroundedRecommendation
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 
+from infrastructure.rag.citation_parser import CitationParser
 from infrastructure.rag.security_prompt_builder import (
     SecurityPromptBuilder
 )
@@ -177,7 +178,7 @@ def main() -> None:
 
     # app = StreamlitService(predictor)
 
-    # app = StreamlitService(prediction_container.predict_match,)
+    app = StreamlitService(prediction_container.predict_match,)
 
     # print("Reached visualize")
 
@@ -215,6 +216,7 @@ def main() -> None:
     embeddings = SentenceTransformerEmbeddingService()
     prompt_builder = SecurityPromptBuilder()
     llm_container = build_llm_container()
+    citation_parser = CitationParser()
     
     print(llm_container)
     print(type(llm_container))
@@ -234,6 +236,7 @@ def main() -> None:
         llm=llm_container.llm,
         query_builder=query_builder,
         prompt_builder=prompt_builder,
+        citation_parser=citation_parser,
     )
     recommendations = (
         _generate_security_recommendations.execute(context)
