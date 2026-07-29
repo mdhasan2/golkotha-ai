@@ -48,5 +48,23 @@ class CitationParser:
             raise InvalidLLMResponseError(
                 f"Unknown citation IDs: {unknown}"
             )
-
         
+        citations: list[Citation] = []
+
+        for citation_id in requested_ids:
+            # print(f"{citation_id}\n")            
+            chunk = allowed[citation_id].chunk
+            # print(f"{chunk}")
+            citations.append(
+                Citation(
+                citation_id=citation_id,
+                title=chunk.title,
+                source_name=chunk.source_name,
+                source_url=chunk.source_url,
+                chunk_id=chunk.chunk_id,
+                )
+            )
+        # print(f"{citations}")
+        # print("Tuple\n")
+        # print(f"{tuple(citations)}")
+        return payload, tuple(citations)

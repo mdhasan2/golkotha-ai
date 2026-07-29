@@ -1,3 +1,5 @@
+from typing import Any
+
 from application.ports.embedding_port import EmbeddingPort
 from application.ports.llm_port import LLMPort
 from application.ports.vector_store_port import VectorStorePort
@@ -66,9 +68,15 @@ class GenerateSecurityRecommendations:
 
         # print(f"LLM Response: \n{raw_response}\n")
 
-        self._citation_parser.parse(
+        payload, citations = self._citation_parser.parse(
             raw_response=raw_response,
             retrieved=retrieved,
+        )
+
+        self._to_domain_result(
+            payload=payload,
+            citations=citations,
+            raw_response=raw_response,
         )
 
     def _retrieve(
@@ -92,11 +100,17 @@ class GenerateSecurityRecommendations:
             for result in results
         ]
 
-    # @staticmethod
-    # def _to_result(
-    #     raw_response: str,
-    # ) -> GroundedRecommendation:
-        
-        
+    @staticmethod
+    def _to_domain_result(
+        payload: dict[str, Any],
+        citations: tuple[Citation, ...],
+        raw_response: str,
+    ) -> GroundedRecommendation:
 
+        findings = tuple(
+            item["statement"]
+            for item in payload.get("findings", [])
+        )
+        
+        print(f"{findings}")
         
