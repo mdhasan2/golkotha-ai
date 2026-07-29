@@ -27,20 +27,50 @@ class StreamlitService:
               self,
               result: GroundedRecommendation,
     ) -> None:
-        st.subheader("AI Security Guidance")
+        
+        if st.button("Generate Security Recommendations"):
+             
+            st.subheader("AI Security Guidance")
 
-        st.metric(
-            "Current Security Assessment",
-            result.risk_level.upper(),
-        )
+            st.metric(
+                "Current Security Assessment",
+                result.risk_level.upper(),
+            )
 
-        st.write(result.summary)
+            st.write(result.summary)
 
-        st.markdown("### Current Findings")
+            st.markdown("### Current Findings")
 
-        for finding in result.findings:
-            st.markdown(f"-{finding}")
-              
+            for finding in result.findings:
+                st.markdown(f" - {finding}")
+
+            st.markdown("### Recommended Next Steps")
+
+            for recommendation in result.recommendations:
+                 st.markdown(f" - {recommendation}")
+
+            st.markdown("### Analysis Limitations")
+
+            for limitation in result.limitations:
+                 st.markdown(f"- {limitation}")
+
+            st.markdown("### Sources")
+
+            for citation in result.citations:
+                 st.markdown(
+                      (
+                           f"- **[{citation.citation_id}] "
+                           f"{citation.title}** - "
+                           f"{citation.source_name}  \n"
+                           f"  {citation.source_url}"
+                      )
+                 )
+
+            with st.expander("Raw grounded response"):
+                 st.code(
+                      result.raw_response,
+                      language="json",
+                 )
 
     def visualize(self, features:MatchFeatures,) -> None:
         
@@ -67,9 +97,10 @@ class StreamlitService:
                       prediction.predicted_label
                  ),
                  class_probabilities={
-                      "Draw": prediction.probability_for(0),
-                      "Argentina": prediction.probability_for(1),
-                      "Spain": prediction.probability_for(2),
+                    #   "Draw": prediction.probability_for(0),
+                    "Spain": prediction.probability_for(0),
+                    "Argentina": prediction.probability_for(1),
+                    #   "Spain": prediction.probability_for(2),
                  },
                  feature_values=features.to_dict(),
                  user_question=(
@@ -77,10 +108,10 @@ class StreamlitService:
                       "more secure and trustworthy?"
                  ),
             )
-            self._generate_security_recommendations=GenerateSecurityRecommendations()
-            recommendations = (
-                    self._generate_security_recommendations.execute(context)
-                 )
+            # self._generate_security_recommendations=GenerateSecurityRecommendations()
+            # recommendations = (
+            #         self._generate_security_recommendations.execute(context)
+            #      )
 
             # argentina_prob = probability[1]
             # spain_prob = probability[0]
@@ -100,5 +131,7 @@ class StreamlitService:
                 f"{spain_probability:.2%}",
             )
             st.progress(float(spain_probability))
+
+
 
    

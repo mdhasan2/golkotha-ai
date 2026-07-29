@@ -73,7 +73,7 @@ class GenerateSecurityRecommendations:
             retrieved=retrieved,
         )
 
-        self._to_domain_result(
+        return self._to_domain_result(
             payload=payload,
             citations=citations,
             raw_response=raw_response,
@@ -112,5 +112,32 @@ class GenerateSecurityRecommendations:
             for item in payload.get("findings", [])
         )
         
-        print(f"{findings}")
+        # print(f"Payload: \n{payload}")
+        recommendations = tuple(
+            (
+                f"{item["priority"]}: {item['action']} "
+                f"- {item['reason']}"
+            )
+            for item in payload.get("recommendations", [],)
+        )
+        # print(f"Recommendations: \n{recommendations}")
         
+
+        limitations = tuple(
+            item
+            for item in payload.get("limitations", [])   
+        )
+        
+        # print(f"Limitations: \n{limitations}")
+
+        return GroundedRecommendation(
+            summary=str(payload.get("summary", "")),
+            risk_level=str(
+                payload.get("risk_level", "unknown")
+            ),
+            findings=findings,
+            recommendations=recommendations,
+            limitations=limitations,
+            citations=citations,
+            raw_response=raw_response,
+        )

@@ -18,6 +18,8 @@ dependencies = [
     "soccerdata>=1.9.0",
     "statsbombpy>=1.21.0",
     "streamlit>=1.59.2",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
     "xgboost>=3.3.0",
 ]
 

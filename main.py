@@ -182,7 +182,7 @@ def main() -> None:
 
     # print("Reached visualize")
 
-    # app.visualize(features)
+    app.visualize(features)
 
     prediction = prediction_container.predict_match.execute(features)
     
@@ -218,10 +218,10 @@ def main() -> None:
     llm_container = build_llm_container()
     citation_parser = CitationParser()
     
-    print(llm_container)
-    print(type(llm_container))
-    print(llm_container.llm)
-    print(type(llm_container.llm))
+    # print(llm_container)
+    # print(type(llm_container))
+    # print(llm_container.llm)
+    # print(type(llm_container.llm))
 
     vector_store = ChromaVectorStore(
         persist_directory="knowledge/vector_store",
@@ -242,7 +242,9 @@ def main() -> None:
         _generate_security_recommendations.execute(context)
     )
 
-    
+    # print(recommendations)
+
+    app.display_security_recommendations(recommendations)
 
 if __name__ == "__main__":
     main()    
