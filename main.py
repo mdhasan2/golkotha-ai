@@ -1,14 +1,17 @@
 
+from pathlib import Path
+from typing import Any
+
+import joblib
 import os
 import pandas as pd
-import joblib
+import streamlit as st
 
 from app.container import(
     build_training_container,
     build_prediction_container,
     build_llm_container,
 )
-
 
 from api import SportsAPI
 from enums import Sport
@@ -143,7 +146,7 @@ def train_model(dataset: pd.DataFrame):
     return training_container.train_model.execute(X, y,)
 
 
-def main() -> None:
+def old_main() -> None:
 
     football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
     
@@ -161,6 +164,109 @@ def main() -> None:
     # print(model)
 
     model = joblib.load("models/new_xgboost.pkl")
+
+    prediction_container = build_prediction_container(model)
+
+    # print(prediction_container)
+
+    features = build_match_features(
+        football_api,
+        "Argentina",
+        "Spain",
+    )
+
+    # print(features)
+
+    # predictor = PredictionService(model)
+
+    # app = StreamlitService(predictor)
+
+    app = StreamlitService(prediction_container.predict_match,)
+
+    # print("Reached visualize")
+
+    app.visualize(features)
+
+    prediction = prediction_container.predict_match.execute(features)
+    
+    # print(prediction)
+
+    context = PredictionContextMapper().map(
+            model_name="GolKotha XGBoost",
+            model_type="XGBoostClassifier",
+            model_version="1.0",
+            home_team="Argentian",
+            away_team="Spain",
+            predicted_label=prediction.predicted_label,
+            predicted_team="Argentina",
+            confidence=prediction.probability_for(
+                prediction.predicted_label
+            ),
+            class_probabilities={
+                # "Draw": prediction.probability_for(0),
+                "Spain": prediction.probability_for(0),
+                "Argentina": prediction.probability_for(1),
+                # "Spain": prediction.probability_for(2),
+            },
+            feature_values=features.to_dict(),
+            user_question=(
+                "What should I implement to make this model "
+                "more secure and trustworthy?"
+            ),
+    )
+    # print(context)
+    query_builder = SecurityQueryBuilder()
+    embeddings = SentenceTransformerEmbeddingService()
+    prompt_builder = SecurityPromptBuilder()
+    llm_container = build_llm_container()
+    citation_parser = CitationParser()
+    
+    # print(llm_container)
+    # print(type(llm_container))
+    # print(llm_container.llm)
+    # print(type(llm_container.llm))
+
+    vector_store = ChromaVectorStore(
+        persist_directory="knowledge/vector_store",
+        collection_name="golkotha_ai_security"
+    )
+
+
+
+    _generate_security_recommendations=GenerateSecurityRecommendations(
+        embedding_service=embeddings,
+        vector_store=vector_store,
+        llm=llm_container.llm,
+        query_builder=query_builder,
+        prompt_builder=prompt_builder,
+        citation_parser=citation_parser,
+    )
+    recommendations = (
+        _generate_security_recommendations.execute(context)
+    )
+
+    # print(recommendations)
+
+    app.display_security_recommendations(recommendations)
+
+MODEL_PATH = Path(
+    "models/new_xgboost.pkl"
+)
+
+@st.cache_resource
+def load_model() -> Any:
+    if not MODEL_PATH.exists():
+        raise FileNotFoundError(
+            f"Model not found: {MODEL_PATH}"
+        )
+
+    return joblib.load(MODEL_PATH)
+
+def main() -> None:
+
+    football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
+
+    model = load_model()
 
     prediction_container = build_prediction_container(model)
 

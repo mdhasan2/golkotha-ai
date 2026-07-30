@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Any
 
-from application.use_cases.train_model import TrainModel
-from application.use_cases.predict_match import PredictMatch
 from application.ports.llm_port import LLMPort
+from application.use_cases.predict_match import PredictMatch
+from application.use_cases.train_model import TrainModel
 
 from infrastructure.ml.xgboost_trainer import XGBoostTrainer
 from infrastructure.ml.xgboost_predictor import XGBoostPredictor
@@ -30,11 +30,15 @@ def build_training_container() -> TrainingContainer:
         train_model=TrainModel(trainer),
     )
 
-def build_prediction_container(model: Any,) -> PredictionContainer:
+def build_prediction_container(
+    model: Any,
+) -> PredictionContainer:
     predictor = XGBoostPredictor(model)
 
     return PredictionContainer(
-        predict_match=PredictMatch(predictor),
+        predict_match=PredictMatch(
+            predictor=predictor
+        ),
     )
 
 def build_llm_container() -> LLMContainer:
