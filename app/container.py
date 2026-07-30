@@ -15,6 +15,23 @@ from infrastructure.ml.xgboost_trainer import XGBoostTrainer
 from infrastructure.ml.xgboost_predictor import XGBoostPredictor
 from infrastructure.llm.llm_factory import build_llm
 
+from infrastructure.rag.chroma_vector_store import (
+    ChromaVectorStore
+)
+
+from infrastructure.rag.citation_parser import CitationParser
+from infrastructure.rag.security_prompt_builder import (
+    SecurityPromptBuilder
+)
+
+from infrastructure.rag.security_query_builder import (
+    SecurityQueryBuilder
+)
+
+from infrastructure.rag.sentence_transformer_embeddings import (
+    SentenceTransformerEmbeddingService
+)
+
 
 @dataclass(frozen=True)
 class TrainingContainer:
@@ -52,12 +69,32 @@ def build_prediction_container(
         ),
     )
 
-def build_llm_container() -> LLMContainer:
-    llm = build_llm()
+def build_advisor_container() -> AdvisorContainer:
 
-    return LLMContainer(
-        llm=llm
+    embeddings = SentenceTransformerEmbeddingService()
+
+    vector_store = ChromaVectorStore(
+        persist_directory="knowledge/vector_store",
+        collection_name="golkotha_ai_security",
     )
 
-def build_advisor_container() -> AdvisorContainer:
-    print("You are here")
+    llm = build_llm()
+
+    query_builder = SecurityQueryBuilder()
+
+    prompt_builder = SecurityPromptBuilder()
+
+    citation_parser = CitationParser()
+
+    generate_security_recommendations = GenerateSecurityRecommendations(
+        embedding_service=embeddings,
+        vector_store=vector_store,
+        llm=llm,
+        prompt_builder=prompt_builder,
+        query_builder=query_builder,
+        citation_parser=citation_parser,
+    )
+
+    return AdvisorContainer(
+        generate_security_recommendations=generate_security_recommendations,
+    )

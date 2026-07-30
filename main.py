@@ -11,7 +11,6 @@ from app.container import(
     AdvisorContainer,
     PredictionContainer,
     build_advisor_container,
-    build_llm_container,
     build_prediction_container,
     build_training_container,
 )
@@ -35,25 +34,13 @@ from domain.rag_models import GroundedRecommendation
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 
-from infrastructure.rag.citation_parser import CitationParser
-from infrastructure.rag.security_prompt_builder import (
-    SecurityPromptBuilder
-)
-
-from infrastructure.rag.security_query_builder import (
-    SecurityQueryBuilder
-)
-from infrastructure.rag.sentence_transformer_embeddings import (
-    SentenceTransformerEmbeddingService
-)
-from infrastructure.rag.chroma_vector_store import (
-    ChromaVectorStore
-)
-
 load_dotenv()
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 SEASON = 2026
+MODEL_PATH = Path(
+    "models/new_xgboost.pkl"
+)
 
 def load_fixture_data(api: SportsAPI):
     """
@@ -148,114 +135,6 @@ def train_model(dataset: pd.DataFrame):
 
     return training_container.train_model.execute(X, y,)
 
-
-def old_main() -> None:
-
-    football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
-    
-    # dataset = build_dataset(football_api)
-
-    # dataset.to_csv(
-    #     "data/worldcup_training.csv",
-    #     index=False,
-    # )
-
-    dataset = pd.read_csv("data/worldcup_training.csv")
-
-    model = train_model(dataset)
-
-    # print(model)
-
-    model = joblib.load("models/new_xgboost.pkl")
-
-    prediction_container = build_prediction_container(model)
-
-    # print(prediction_container)
-
-    features = build_match_features(
-        football_api,
-        "Argentina",
-        "Spain",
-    )
-
-    # print(features)
-
-    # predictor = PredictionService(model)
-
-    # app = StreamlitService(predictor)
-
-    app = StreamlitService(prediction_container.predict_match,)
-
-    # print("Reached visualize")
-
-    app.visualize(features)
-
-    prediction = prediction_container.predict_match.execute(features)
-    
-    # print(prediction)
-
-    context = PredictionContextMapper().map(
-            model_name="GolKotha XGBoost",
-            model_type="XGBoostClassifier",
-            model_version="1.0",
-            home_team="Argentian",
-            away_team="Spain",
-            predicted_label=prediction.predicted_label,
-            predicted_team="Argentina",
-            confidence=prediction.probability_for(
-                prediction.predicted_label
-            ),
-            class_probabilities={
-                # "Draw": prediction.probability_for(0),
-                "Spain": prediction.probability_for(0),
-                "Argentina": prediction.probability_for(1),
-                # "Spain": prediction.probability_for(2),
-            },
-            feature_values=features.to_dict(),
-            user_question=(
-                "What should I implement to make this model "
-                "more secure and trustworthy?"
-            ),
-    )
-    # print(context)
-    query_builder = SecurityQueryBuilder()
-    embeddings = SentenceTransformerEmbeddingService()
-    prompt_builder = SecurityPromptBuilder()
-    llm_container = build_llm_container()
-    citation_parser = CitationParser()
-    
-    # print(llm_container)
-    # print(type(llm_container))
-    # print(llm_container.llm)
-    # print(type(llm_container.llm))
-
-    vector_store = ChromaVectorStore(
-        persist_directory="knowledge/vector_store",
-        collection_name="golkotha_ai_security"
-    )
-
-
-
-    _generate_security_recommendations=GenerateSecurityRecommendations(
-        embedding_service=embeddings,
-        vector_store=vector_store,
-        llm=llm_container.llm,
-        query_builder=query_builder,
-        prompt_builder=prompt_builder,
-        citation_parser=citation_parser,
-    )
-    recommendations = (
-        _generate_security_recommendations.execute(context)
-    )
-
-    # print(recommendations)
-
-    app.display_security_recommendations(recommendations)
-
-MODEL_PATH = Path(
-    "models/new_xgboost.pkl"
-)
-
 @st.cache_resource
 def load_model() -> Any:
     if not MODEL_PATH.exists():
@@ -290,30 +169,18 @@ def main() -> None:
         build_cached_advisor_container()
     )
 
-    # print(prediction_container)
-
     features = build_match_features(
         football_api,
         "Argentina",
         "Spain",
     )
 
-    # print(features)
-
-    # predictor = PredictionService(model)
-
-    # app = StreamlitService(predictor)
-
     app = StreamlitService(prediction_container.predict_match,)
-
-    # print("Reached visualize")
 
     app.visualize(features)
 
     prediction = prediction_container.predict_match.execute(features)
     
-    # print(prediction)
-
     context = PredictionContextMapper().map(
             model_name="GolKotha XGBoost",
             model_type="XGBoostClassifier",
@@ -337,38 +204,10 @@ def main() -> None:
                 "more secure and trustworthy?"
             ),
     )
-    # print(context)
-    query_builder = SecurityQueryBuilder()
-    embeddings = SentenceTransformerEmbeddingService()
-    prompt_builder = SecurityPromptBuilder()
-    llm_container = build_llm_container()
-    citation_parser = CitationParser()
-    
-    # print(llm_container)
-    # print(type(llm_container))
-    # print(llm_container.llm)
-    # print(type(llm_container.llm))
 
-    vector_store = ChromaVectorStore(
-        persist_directory="knowledge/vector_store",
-        collection_name="golkotha_ai_security"
-    )
-
-
-
-    _generate_security_recommendations=GenerateSecurityRecommendations(
-        embedding_service=embeddings,
-        vector_store=vector_store,
-        llm=llm_container.llm,
-        query_builder=query_builder,
-        prompt_builder=prompt_builder,
-        citation_parser=citation_parser,
-    )
     recommendations = (
-        _generate_security_recommendations.execute(context)
+        advisor_container.generate_security_recommendations.execute(context)
     )
-
-    # print(recommendations)
 
     app.display_security_recommendations(recommendations)
 
