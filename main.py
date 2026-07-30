@@ -8,9 +8,12 @@ import pandas as pd
 import streamlit as st
 
 from app.container import(
-    build_training_container,
-    build_prediction_container,
+    AdvisorContainer,
+    PredictionContainer,
+    build_advisor_container,
     build_llm_container,
+    build_prediction_container,
+    build_training_container,
 )
 
 from api import SportsAPI
@@ -262,13 +265,30 @@ def load_model() -> Any:
 
     return joblib.load(MODEL_PATH)
 
+@st.cache_resource
+def build_cached_prediction_container (
+    _model: Any,
+) -> PredictionContainer:
+    return build_prediction_container(_model)
+
+@st.cache_resource
+def build_cached_advisor_container(
+) -> AdvisorContainer:
+    return build_advisor_container()
+
 def main() -> None:
 
     football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
 
     model = load_model()
 
-    prediction_container = build_prediction_container(model)
+    prediction_container = (
+        build_cached_prediction_container(model)
+    )
+
+    advisor_container = (
+        build_cached_advisor_container()
+    )
 
     # print(prediction_container)
 

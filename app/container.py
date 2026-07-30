@@ -3,8 +3,13 @@ from dataclasses import dataclass
 from typing import Any
 
 from application.ports.llm_port import LLMPort
+
+from application.use_cases.generate_security_recommendations import (
+    GenerateSecurityRecommendations,
+)
 from application.use_cases.predict_match import PredictMatch
 from application.use_cases.train_model import TrainModel
+
 
 from infrastructure.ml.xgboost_trainer import XGBoostTrainer
 from infrastructure.ml.xgboost_predictor import XGBoostPredictor
@@ -22,6 +27,12 @@ class PredictionContainer:
 @dataclass(frozen=True)
 class LLMContainer:
     llm: LLMPort
+
+@dataclass(frozen=True)
+class AdvisorContainer:
+    generate_security_recommendations: (
+        GenerateSecurityRecommendations
+    )
 
 def build_training_container() -> TrainingContainer:
     trainer = XGBoostTrainer()
@@ -47,3 +58,6 @@ def build_llm_container() -> LLMContainer:
     return LLMContainer(
         llm=llm
     )
+
+def build_advisor_container() -> AdvisorContainer:
+    print("You are here")
