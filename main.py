@@ -20,15 +20,15 @@ from enums import Sport
 
 from dotenv import load_dotenv
 
-from features.player_forms import PlayerForms
-from features.team_features import TeamFeatures
-from features.match_builder import MatchBuilder
+# from features.player_forms import PlayerForms
+# from features.team_features import TeamFeatures
+# from features.match_builder import MatchBuilder
 from ml.dataset_builder import DatasetBuilder
 from ml.predictor import PredictionService
 from ml.trainer import ModelTrainer
 from presentation.streamlit_app import StreamlitService
 
-from domain.models import MatchFeatures
+# from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
 from domain.security_models import SecurityAssessmentRequest
 
@@ -37,8 +37,8 @@ from application.use_cases.generate_security_recommendations import GenerateSecu
 
 load_dotenv()
 
-API_KEY = os.getenv("API_FOOTBALL_KEY")
-SEASON = 2026
+# API_KEY = os.getenv("API_FOOTBALL_KEY")
+# SEASON = 2026
 MODEL_PATH = Path(
     "models/new_xgboost.pkl"
 )
@@ -73,46 +73,46 @@ def build_dataset(api: SportsAPI) -> pd.DataFrame:
 
     return dataset
 
-def build_match_features(
-        api: SportsAPI,
-        home_team: str,
-        away_team: str,
-    ):
+# def build_match_features(
+#         api: SportsAPI,
+#         home_team: str,
+#         away_team: str,
+#     ):
 
-    league = api.leagues.world_cup()
-    league_id = league["league"]["id"]    
+#     league = api.leagues.world_cup()
+#     league_id = league["league"]["id"]    
 
-    player_builder = PlayerForms()
-    team_builder = TeamFeatures()
-    match_builder = MatchBuilder()
+#     player_builder = PlayerForms()
+#     team_builder = TeamFeatures()
+#     match_builder = MatchBuilder()
 
-    def build_team(team_name):
+#     def build_team(team_name):
 
-        team = api.teams.by_name(team_name, league_id, SEASON)
-        team_id = team["team"]["id"]
+#         team = api.teams.by_name(team_name, league_id, SEASON)
+#         team_id = team["team"]["id"]
 
-        # Download squad
-        squad = api.players.squad(team_id)
+#         # Download squad
+#         squad = api.players.squad(team_id)
 
-        # Engineer player features
-        player_featurs = []
+#         # Engineer player features
+#         player_featurs = []
     
-        for player in squad:
-            stats = api.players.statistics(player["id"], SEASON, league_id)
-            player_featurs.append(player_builder.build(stats))
+#         for player in squad:
+#             stats = api.players.statistics(player["id"], SEASON, league_id)
+#             player_featurs.append(player_builder.build(stats))
 
-        return team_builder.build(player_featurs)
+#         return team_builder.build(player_featurs)
         
 
-    home = build_team(home_team)
-    away = build_team(away_team)
+#     home = build_team(home_team)
+#     away = build_team(away_team)
 
-    features = match_builder.build(home, away)
-    print(type(features))
-    print(features)
+#     features = match_builder.build(home, away)
+#     # print(type(features))
+#     # print(features)
     
 
-    return MatchFeatures.from_dict(features)
+#     return MatchFeatures.from_dict(features)
 
 def train_model(dataset: pd.DataFrame):
     dataset = dataset.dropna(subset=["target"])
@@ -154,11 +154,22 @@ def build_cached_advisor_container(
 ) -> AdvisorContainer:
     return build_advisor_container()
 
+@st.cache_resource
+def build_sports_api() -> SportsAPI:
+    api_key = os.getenv("API_FOOTBALL_KEY")
+
+    if not api_key:
+        raise RuntimeError(
+            "API_FOOTBALL_KEY is not configured."
+        )
+    return SportsAPI(api_key, Sport.FOOTBALL)
+
 def main() -> None:
 
-    football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
-
+    # football_api = SportsAPI(API_KEY, Sport.FOOTBALL)
+    
     model = load_model()
+    football_api = build_sports_api()
 
     prediction_container = (
         build_cached_prediction_container(model)
@@ -168,60 +179,63 @@ def main() -> None:
         build_cached_advisor_container()
     )
 
-    features = build_match_features(
-        football_api,
-        "Argentina",
-        "Spain",
-    )
+    # features = build_match_features(
+    #     football_api,
+    #     "Argentina",
+    #     "Spain",
+    # )
+
+    # print(features)
 
     # app = StreamlitService(prediction_container.predict_match,)
 
     app = StreamlitService(
+        football_api=football_api,
         prediction_container=prediction_container,
     )
 
     # app.visualize(features)
 
-    prediction = prediction_container.predict_match.execute(features)
+    # prediction = prediction_container.predict_match.execute(features)
     
-    request = SecurityAssessmentRequest(
-            model_name="GolKotha XGBoost",
-            model_type="XGBoostClassifier",
-            model_version="1.0",
+    # request = SecurityAssessmentRequest(
+    #         model_name="GolKotha XGBoost",
+    #         model_type="XGBoostClassifier",
+    #         model_version="1.0",
 
-            home_team="Argentian",
-            away_team="Spain",
+    #         home_team="Argentian",
+    #         away_team="Spain",
 
-            # predicted_label=prediction.predicted_label,
-            # predicted_team="Argentina",
-            # confidence=prediction.probability_for(
-            #     prediction.predicted_label
-            # ),
-            # class_probabilities={
-            #     # "Draw": prediction.probability_for(0),
-            #     "Spain": prediction.probability_for(0),
-            #     "Argentina": prediction.probability_for(1),
-            #     # "Spain": prediction.probability_for(2),
-            # },
-            # feature_values=features.to_dict(),
+    #         # predicted_label=prediction.predicted_label,
+    #         # predicted_team="Argentina",
+    #         # confidence=prediction.probability_for(
+    #         #     prediction.predicted_label
+    #         # ),
+    #         # class_probabilities={
+    #         #     # "Draw": prediction.probability_for(0),
+    #         #     "Spain": prediction.probability_for(0),
+    #         #     "Argentina": prediction.probability_for(1),
+    #         #     # "Spain": prediction.probability_for(2),
+    #         # },
+    #         # feature_values=features.to_dict(),
 
-            prediction=prediction,
-            features=features,
+    #         prediction=prediction,
+    #         features=features,
 
-            user_question=(
-                "What should I implement to make this model "
-                "more secure and trustworthy?"
-            ),
-    )
+    #         user_question=(
+    #             "What should I implement to make this model "
+    #             "more secure and trustworthy?"
+    #         ),
+    # )
 
-    recommendations = (
-        # advisor_container.generate_security_recommendations.execute(context)
-        advisor_container.generate_security_recommendations.execute(
-            request=request
-        )
-    )
+    # recommendations = (
+    #     # advisor_container.generate_security_recommendations.execute(context)
+    #     advisor_container.generate_security_recommendations.execute(
+    #         request=request
+    #     )
+    # )
 
-    print(recommendations)
+    # print(recommendations)
 
     # app.display_security_recommendations(recommendations)
 

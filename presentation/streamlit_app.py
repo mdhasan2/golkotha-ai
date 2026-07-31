@@ -1,6 +1,7 @@
 
 import streamlit as st
 
+from api import SportsAPI
 from app.container import(
      PredictionContainer,
 )
@@ -15,13 +16,19 @@ from presentation.session_state import(
      initialize_session_state,
 )
 
+from presentation.sections.baseline_section import (
+     render_baseline_section,
+)
+
 class StreamlitService:
 
     # def __init__(self, predict_match: PredictMatch,) -> None: 
     def __init__(
         self,
+        football_api: SportsAPI,
         prediction_container: PredictionContainer,
     ) -> None:
+        self._football_api = football_api
         self._prediction_container = (
               prediction_container
         )
@@ -36,6 +43,37 @@ class StreamlitService:
          initialize_session_state()
          
          st.title("🛡️ GolKotha AI Security Lab")
+
+         st.write(
+              "Inspect a baseline prediction and generate "
+              "grounded AI security recommendations."
+         )
+
+         st.caption(
+              "Current implementation: Baseline Model + RAG "
+              "Security Advisor. SHAP and FGSM are planned."
+         )
+
+         (
+              baseline_tab,
+              explainability_tab,
+              attack_tab,
+              advisor_tab,
+         ) = st.tabs(
+              [
+                   "📊 Baseline Model",
+                   "🔍 Explainability",
+                   "⚔️ Adversarial Attack",
+                   "🛡️ AI Security Advisor",
+              ]
+         )
+
+         with baseline_tab:
+              render_baseline_section(
+                   self._football_api,
+                   container=self._prediction_container,
+              )
+              
     
     def security_question(self) -> str:
             return st.text_area(
