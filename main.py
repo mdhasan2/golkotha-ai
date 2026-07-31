@@ -174,7 +174,11 @@ def main() -> None:
         "Spain",
     )
 
-    app = StreamlitService(prediction_container.predict_match,)
+    # app = StreamlitService(prediction_container.predict_match,)
+
+    app = StreamlitService(
+        prediction_container=prediction_container,
+    )
 
     # app.visualize(features)
 
@@ -219,7 +223,9 @@ def main() -> None:
 
     print(recommendations)
 
-    app.display_security_recommendations(recommendations)
+    # app.display_security_recommendations(recommendations)
+
+    app.run()
 
 if __name__ == "__main__":
     main()    

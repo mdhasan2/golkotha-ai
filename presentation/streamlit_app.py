@@ -1,17 +1,41 @@
 
 import streamlit as st
 
+from app.container import(
+     PredictionContainer,
+)
+
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 from application.use_cases.predict_match import PredictMatch
 from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
 
+from presentation.session_state import(
+     initialize_session_state,
+)
+
 class StreamlitService:
 
-    def __init__(self, predict_match: PredictMatch,) -> None: 
+    # def __init__(self, predict_match: PredictMatch,) -> None: 
+    def __init__(
+        self,
+        prediction_container: PredictionContainer,
+    ) -> None:
+        self._prediction_container = (
+              prediction_container
+        )
+        
+    def run(self) -> None:
+         st.set_page_config(
+              page_title="GolKotha AI Security Lab",
+              page_icon="🛡️",
+              layout="wide"
+         )
 
-        self._predict_match = predict_match
+         initialize_session_state()
+         
+         st.title("🛡️ GolKotha AI Security Lab")
     
     def security_question(self) -> str:
             return st.text_area(
