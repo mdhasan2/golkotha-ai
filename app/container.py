@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.ports.llm_port import LLMPort
-
 from application.use_cases.generate_security_recommendations import (
     GenerateSecurityRecommendations,
 )
@@ -86,6 +86,8 @@ def build_advisor_container() -> AdvisorContainer:
 
     citation_parser = CitationParser()
 
+    predict_context_mapper = PredictionContextMapper()
+
     generate_security_recommendations = GenerateSecurityRecommendations(
         embedding_service=embeddings,
         vector_store=vector_store,
@@ -93,6 +95,7 @@ def build_advisor_container() -> AdvisorContainer:
         prompt_builder=prompt_builder,
         query_builder=query_builder,
         citation_parser=citation_parser,
+        predict_context_mapper=predict_context_mapper,
     )
 
     return AdvisorContainer(

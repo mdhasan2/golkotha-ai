@@ -30,6 +30,7 @@ from presentation.streamlit_app import StreamlitService
 
 from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
+from domain.security_models import SecurityAssessmentRequest
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
@@ -129,8 +130,6 @@ def train_model(dataset: pd.DataFrame):
 
     y = dataset["target"].astype(int)
 
-    # trainer = ModelTrainer()
-
     training_container = build_training_container()
 
     return training_container.train_model.execute(X, y,)
@@ -177,28 +176,34 @@ def main() -> None:
 
     app = StreamlitService(prediction_container.predict_match,)
 
-    app.visualize(features)
+    # app.visualize(features)
 
     prediction = prediction_container.predict_match.execute(features)
     
-    context = PredictionContextMapper().map(
+    request = SecurityAssessmentRequest(
             model_name="GolKotha XGBoost",
             model_type="XGBoostClassifier",
             model_version="1.0",
+
             home_team="Argentian",
             away_team="Spain",
-            predicted_label=prediction.predicted_label,
-            predicted_team="Argentina",
-            confidence=prediction.probability_for(
-                prediction.predicted_label
-            ),
-            class_probabilities={
-                # "Draw": prediction.probability_for(0),
-                "Spain": prediction.probability_for(0),
-                "Argentina": prediction.probability_for(1),
-                # "Spain": prediction.probability_for(2),
-            },
-            feature_values=features.to_dict(),
+
+            # predicted_label=prediction.predicted_label,
+            # predicted_team="Argentina",
+            # confidence=prediction.probability_for(
+            #     prediction.predicted_label
+            # ),
+            # class_probabilities={
+            #     # "Draw": prediction.probability_for(0),
+            #     "Spain": prediction.probability_for(0),
+            #     "Argentina": prediction.probability_for(1),
+            #     # "Spain": prediction.probability_for(2),
+            # },
+            # feature_values=features.to_dict(),
+
+            prediction=prediction,
+            features=features,
+
             user_question=(
                 "What should I implement to make this model "
                 "more secure and trustworthy?"
@@ -206,8 +211,13 @@ def main() -> None:
     )
 
     recommendations = (
-        advisor_container.generate_security_recommendations.execute(context)
+        # advisor_container.generate_security_recommendations.execute(context)
+        advisor_container.generate_security_recommendations.execute(
+            request=request
+        )
     )
+
+    print(recommendations)
 
     app.display_security_recommendations(recommendations)
 

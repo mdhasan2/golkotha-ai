@@ -1,5 +1,6 @@
 from typing import Any
 
+from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.ports.embedding_port import EmbeddingPort
 from application.ports.llm_port import LLMPort
 from application.ports.vector_store_port import VectorStorePort
@@ -10,6 +11,8 @@ from domain.rag_models import (
     PredictionContext,
     RetrivedChunk,
 )
+
+from domain.security_models import SecurityAssessmentRequest
 
 from infrastructure.rag.citation_parser import CitationParser
 from infrastructure.rag.security_prompt_builder import (
@@ -30,6 +33,7 @@ class GenerateSecurityRecommendations:
         query_builder: SecurityQueryBuilder,
         prompt_builder: SecurityPromptBuilder,
         citation_parser: CitationParser,
+        predict_context_mapper: PredictionContextMapper,
     ) -> None:
         self._embedding_service = embedding_service
         self._vector_store = vector_store
@@ -37,12 +41,18 @@ class GenerateSecurityRecommendations:
         self._query_builder = query_builder
         self._prompt_builder = prompt_builder
         self._citation_parser = citation_parser
+        self._prediciton_context_mapper = predict_context_mapper
+
     def execute(
         self,
-        context: PredictionContext,
+        # context: PredictionContext,
+        request: SecurityAssessmentRequest,
         retrieval_limit: int = 8,
         minimum_score: float = 0.20,
     )-> GroundedRecommendation:
+
+        context = self._prediciton_context_mapper.map(request)
+        
         retrieved = self._retrieve(
             context=context,
             limit=retrieval_limit,
