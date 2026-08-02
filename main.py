@@ -192,6 +192,7 @@ def main() -> None:
     app = StreamlitService(
         football_api=football_api,
         prediction_container=prediction_container,
+        advisor_container=advisor_container,
     )
 
     # app.visualize(features)

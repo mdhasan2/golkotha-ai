@@ -4,6 +4,7 @@ import streamlit as st
 from api import SportsAPI
 from app.container import(
      PredictionContainer,
+     AdvisorContainer,
 )
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
@@ -20,6 +21,10 @@ from presentation.sections.baseline_section import (
      render_baseline_section,
 )
 
+from presentation.sections.advisor_section import (
+     render_advisor_section,
+)
+
 class StreamlitService:
 
     # def __init__(self, predict_match: PredictMatch,) -> None: 
@@ -27,11 +32,13 @@ class StreamlitService:
         self,
         football_api: SportsAPI,
         prediction_container: PredictionContainer,
+        advisor_container: AdvisorContainer,
     ) -> None:
         self._football_api = football_api
         self._prediction_container = (
               prediction_container
         )
+        self._advisor_container = advisor_container
         
     def run(self) -> None:
          st.set_page_config(
@@ -73,7 +80,11 @@ class StreamlitService:
                    self._football_api,
                    container=self._prediction_container,
               )
-              
+
+         with advisor_tab:
+              render_advisor_section(
+                   container=self._advisor_container,
+              )
     
     def security_question(self) -> str:
             return st.text_area(

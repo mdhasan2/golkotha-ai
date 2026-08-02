@@ -15,6 +15,7 @@ class TeamService:
     def by_name(self, name, league_id, season):
 
         teams = self.list(league_id, season)
+
         return next(
             team_name
             for team_name in teams

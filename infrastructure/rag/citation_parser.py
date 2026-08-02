@@ -15,6 +15,7 @@ class CitationParser:
     ) -> None:
         try:
             payload = json.loads(raw_response)
+            print(f"LLM Payload: \n{payload}\n")
         except json.JSONDecodeError as exc:
             raise InvalidLLMResponseError(
                 "LLM response was not valid JSON"

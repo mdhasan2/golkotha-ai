@@ -53,7 +53,7 @@ SECURITY RULES AND GROUNDING RULES
 Return this schema:
 
 {
-    "summery": "string",
+    "summary": "string",
     "risk_level": "low|medium|high|critical|unknown",
     "findings": [
         {

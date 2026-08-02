@@ -76,7 +76,7 @@ class GenerateSecurityRecommendations:
             user_prompt=user_prompt,
         )
 
-        # print(f"LLM Response: \n{raw_response}\n")
+        print(f"LLM raw Response: \n{raw_response}\n")
 
         payload, citations = self._citation_parser.parse(
             raw_response=raw_response,
