@@ -3,8 +3,9 @@ import streamlit as st
 
 from api import SportsAPI
 from app.container import(
-     PredictionContainer,
      AdvisorContainer,
+     MonitoringContainer,
+     PredictionContainer,
 )
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
@@ -25,6 +26,10 @@ from presentation.sections.advisor_section import (
      render_advisor_section,
 )
 
+from presentation.sections.monitoring_section import(
+     render_monitoring_section
+)
+
 class StreamlitService:
 
     # def __init__(self, predict_match: PredictMatch,) -> None: 
@@ -33,12 +38,14 @@ class StreamlitService:
         football_api: SportsAPI,
         prediction_container: PredictionContainer,
         advisor_container: AdvisorContainer,
+        monitoring_container: MonitoringContainer,
     ) -> None:
         self._football_api = football_api
         self._prediction_container = (
               prediction_container
         )
         self._advisor_container = advisor_container
+        self._monitoring_container = monitoring_container
         
     def run(self) -> None:
 
@@ -64,7 +71,9 @@ class StreamlitService:
                self.render_rag_evaluation()
 
          elif page == "Monitoring Dashboard":
-               self.render_monitoring_dashboard()
+              render_monitoring_section(
+                    container=self._monitoring_container,
+               )
 
     def render_security_workbench(self) -> None:
 
@@ -110,8 +119,11 @@ class StreamlitService:
     def render_rag_evaluation(self):
          ...
 
-    def render_monitoring_dashboard(self):
-         ...  
+#     def render_monitoring_section(
+#           container: MonitoringContainer,
+#     ) -> None:
+#          dashboard = Moni
+         
 
          
     def security_question(self) -> str:

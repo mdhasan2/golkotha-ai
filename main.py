@@ -9,8 +9,10 @@ import streamlit as st
 
 from app.container import(
     AdvisorContainer,
+    MonitoringContainer,
     PredictionContainer,
     build_advisor_container,
+    build_monitoring_container,
     build_prediction_container,
     build_training_container,
 )
@@ -154,9 +156,17 @@ def build_cached_prediction_container (
     return build_prediction_container(_model)
 
 @st.cache_resource
+def build_cached_monitoring_container(
+) -> MonitoringContainer:
+    return build_monitoring_container()
+
+@st.cache_resource
 def build_cached_advisor_container(
+    _monitoring_container: MonitoringContainer,
 ) -> AdvisorContainer:
-    return build_advisor_container()
+    return build_advisor_container(
+        monitoring_container=_monitoring_container,
+    )
 
 @st.cache_resource
 def build_sports_api() -> SportsAPI:
@@ -179,8 +189,14 @@ def main() -> None:
         build_cached_prediction_container(model)
     )
 
+    monitoring_container = (
+        build_cached_monitoring_container()
+    )
+
     advisor_container = (
-        build_cached_advisor_container()
+        build_cached_advisor_container(
+            monitoring_container,
+        )
     )
 
     # features = build_match_features(
@@ -197,6 +213,7 @@ def main() -> None:
         football_api=football_api,
         prediction_container=prediction_container,
         advisor_container=advisor_container,
+        monitoring_container=monitoring_container,
     )
 
 

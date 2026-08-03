@@ -68,9 +68,7 @@ class AdvisorContainer:
     # generate_security_recommendations: (
     #     GenerateSecurityRecommendations
     # )
-    generate_security_recommendations: (
-        MonitoredRecommendationService
-    )
+    generate_security_recommendations: MonitoredRecommendationService
 
 @dataclass(frozen=True)
 class MonitoringContainer:
@@ -94,8 +92,9 @@ def build_prediction_container(
         ),
     )
 
-def build_advisor_container() -> AdvisorContainer:
-
+def build_advisor_container(
+        monitoring_container: MonitoringContainer,
+) -> AdvisorContainer:
     embeddings = SentenceTransformerEmbeddingService()
 
     vector_store = ChromaVectorStore(
@@ -106,14 +105,11 @@ def build_advisor_container() -> AdvisorContainer:
     llm = build_llm()
 
     query_builder = SecurityQueryBuilder()
-
     prompt_builder = SecurityPromptBuilder()
-
     citation_parser = CitationParser()
-
     predict_context_mapper = PredictionContextMapper()
 
-    generate_security_recommendations = GenerateSecurityRecommendations(
+    recommendation_use_case = GenerateSecurityRecommendations(
         embedding_service=embeddings,
         vector_store=vector_store,
         llm=llm,
@@ -123,11 +119,13 @@ def build_advisor_container() -> AdvisorContainer:
         predict_context_mapper=predict_context_mapper,
     )
 
-    monitoring_container = build_monitoring_container()
+    # monitoring_container = build_monitoring_container()
 
     monitoring_service = MonitoredRecommendationService(
-        recommendation_use_case=generate_security_recommendations,
-        monitoring_repository=monitoring_container.repository,
+        recommendation_use_case=recommendation_use_case,
+        monitoring_repository=(
+            monitoring_container.repository,
+        ),
         retrieval_strategy="vector",
         prompt_strategy="structured",
     )
