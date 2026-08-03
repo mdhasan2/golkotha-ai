@@ -1,6 +1,8 @@
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.ports.llm_port import LLMPort
@@ -32,6 +34,22 @@ from infrastructure.rag.sentence_transformer_embeddings import (
     SentenceTransformerEmbeddingService
 )
 
+from infrastructure.rag.monitored_recommendation_service import (
+    MonitoredRecommendationService,
+)
+
+from infrastructure.monitoring.sqlite_monitoring_repository import (
+    SQLiteMonitoringRepository,
+)
+
+ROOT_PATH = Path(__file__).resolve().parents[1]
+
+MONITORING_DATABASE_PATH = (
+    ROOT_PATH
+    / "data"
+    / "monitoring"
+    / "monitoring.db"
+)
 
 @dataclass(frozen=True)
 class TrainingContainer:
@@ -47,9 +65,16 @@ class LLMContainer:
 
 @dataclass(frozen=True)
 class AdvisorContainer:
+    # generate_security_recommendations: (
+    #     GenerateSecurityRecommendations
+    # )
     generate_security_recommendations: (
-        GenerateSecurityRecommendations
+        MonitoredRecommendationService
     )
+
+@dataclass(frozen=True)
+class MonitoringContainer:
+    repository: SQLiteMonitoringRepository
 
 def build_training_container() -> TrainingContainer:
     trainer = XGBoostTrainer()
@@ -98,6 +123,27 @@ def build_advisor_container() -> AdvisorContainer:
         predict_context_mapper=predict_context_mapper,
     )
 
+    monitoring_container = build_monitoring_container()
+
+    monitoring_service = MonitoredRecommendationService(
+        recommendation_use_case=generate_security_recommendations,
+        monitoring_repository=monitoring_container.repository,
+        retrieval_strategy="vector",
+        prompt_strategy="structured",
+    )
+
     return AdvisorContainer(
-        generate_security_recommendations=generate_security_recommendations,
+        # generate_security_recommendations=generate_security_recommendations,
+        generate_security_recommendations=monitoring_service,
+    )
+
+def build_monitoring_container(
+    ) -> MonitoringContainer:
+    print("Building Monitoring Container...")
+    repository = SQLiteMonitoringRepository(
+        MONITORING_DATABASE_PATH,
+    )
+
+    return MonitoringContainer(
+        repository=repository,
     )

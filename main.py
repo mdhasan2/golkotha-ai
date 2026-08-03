@@ -20,25 +20,29 @@ from enums import Sport
 
 from dotenv import load_dotenv
 
-# from features.player_forms import PlayerForms
-# from features.team_features import TeamFeatures
-# from features.match_builder import MatchBuilder
+from features.player_forms import PlayerForms
+from features.team_features import TeamFeatures
+from features.match_builder import MatchBuilder
 from ml.dataset_builder import DatasetBuilder
 from ml.predictor import PredictionService
 from ml.trainer import ModelTrainer
 from presentation.streamlit_app import StreamlitService
 
-# from domain.models import MatchFeatures
+from domain.models import MatchFeatures
 from domain.rag_models import GroundedRecommendation
 from domain.security_models import SecurityAssessmentRequest
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 
+from infrastructure.rag.monitored_recommendation_service import (
+    MonitoringRepositoryPort,
+)
+
 load_dotenv()
 
 # API_KEY = os.getenv("API_FOOTBALL_KEY")
-# SEASON = 2026
+SEASON = 2026
 MODEL_PATH = Path(
     "models/new_xgboost.pkl"
 )
@@ -73,46 +77,46 @@ def build_dataset(api: SportsAPI) -> pd.DataFrame:
 
     return dataset
 
-# def build_match_features(
-#         api: SportsAPI,
-#         home_team: str,
-#         away_team: str,
-#     ):
+def build_match_features(
+        api: SportsAPI,
+        home_team: str,
+        away_team: str,
+    ):
 
-#     league = api.leagues.world_cup()
-#     league_id = league["league"]["id"]    
+    league = api.leagues.world_cup()
+    league_id = league["league"]["id"]    
 
-#     player_builder = PlayerForms()
-#     team_builder = TeamFeatures()
-#     match_builder = MatchBuilder()
+    player_builder = PlayerForms()
+    team_builder = TeamFeatures()
+    match_builder = MatchBuilder()
 
-#     def build_team(team_name):
+    def build_team(team_name):
 
-#         team = api.teams.by_name(team_name, league_id, SEASON)
-#         team_id = team["team"]["id"]
+        team = api.teams.by_name(team_name, league_id, SEASON)
+        team_id = team["team"]["id"]
 
-#         # Download squad
-#         squad = api.players.squad(team_id)
+        # Download squad
+        squad = api.players.squad(team_id)
 
-#         # Engineer player features
-#         player_featurs = []
+        # Engineer player features
+        player_featurs = []
     
-#         for player in squad:
-#             stats = api.players.statistics(player["id"], SEASON, league_id)
-#             player_featurs.append(player_builder.build(stats))
+        for player in squad:
+            stats = api.players.statistics(player["id"], SEASON, league_id)
+            player_featurs.append(player_builder.build(stats))
 
-#         return team_builder.build(player_featurs)
+        return team_builder.build(player_featurs)
         
 
-#     home = build_team(home_team)
-#     away = build_team(away_team)
+    home = build_team(home_team)
+    away = build_team(away_team)
 
-#     features = match_builder.build(home, away)
-#     # print(type(features))
-#     # print(features)
+    features = match_builder.build(home, away)
+    # print(type(features))
+    # print(features)
     
 
-#     return MatchFeatures.from_dict(features)
+    return MatchFeatures.from_dict(features)
 
 def train_model(dataset: pd.DataFrame):
     dataset = dataset.dropna(subset=["target"])
@@ -195,6 +199,8 @@ def main() -> None:
         advisor_container=advisor_container,
     )
 
+
+
     # app.visualize(features)
 
     # prediction = prediction_container.predict_match.execute(features)
@@ -241,6 +247,20 @@ def main() -> None:
     # app.display_security_recommendations(recommendations)
 
     app.run()
+
+    # recommendations_use_case=advisor_container.generate_security_recommendations
+
+    # monitored_recommendations = (
+    #     MonitoringRepositoryPort(
+    #         recommendations_use_case,
+    #     )
+    # )
+
+    # recommendations = monitored_recommendations.execute(
+    #     context=request
+    # )
+
+    
 
 if __name__ == "__main__":
     main()    

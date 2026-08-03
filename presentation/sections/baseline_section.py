@@ -24,11 +24,13 @@ def render_baseline_section(
         "and probability distribution. "
     )
 
-    build_clicked = st.button(
-        "⚽ Build Features & Predict",
-        type="primary",
-        use_container_width=True,
-    )
+    # build_clicked = st.button(
+    #     "⚽ Build Features & Predict",
+    #     type="primary",
+    #     use_container_width=True,
+    # )
+
+    build_clicked = True
 
     home_team="Argentina"
     away_team="Spain"

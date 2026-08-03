@@ -1,4 +1,5 @@
 from typing import Any
+from time import perf_counter
 
 from application.mapper.prediction_context_mapper import PredictionContextMapper
 from application.ports.embedding_port import EmbeddingPort
@@ -52,12 +53,18 @@ class GenerateSecurityRecommendations:
     )-> GroundedRecommendation:
 
         context = self._prediciton_context_mapper.map(request)
-        
+
+        start_time = perf_counter()
+
         retrieved = self._retrieve(
             context=context,
             limit=retrieval_limit,
             minimum_score=minimum_score,
         )
+
+        retrieval_latency_ms = (
+            perf_counter() - start_time
+        ) * 1000
 
         if not retrieved:
             raise RuntimeError(
@@ -71,12 +78,24 @@ class GenerateSecurityRecommendations:
         )
         # print(f"System Prompt: \n{system_prompt}\n, User Prompt: \n{user_prompt}")
 
-        raw_response = self._llm.generate(
+        start_time = perf_counter()
+
+        response = self._llm.generate(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
         )
 
-        print(f"LLM raw Response: \n{raw_response}\n")
+        raw_response = response.text
+        input_tokens = response.input_tokens
+        output_tokens = response.output_tokens
+        provider = response.provider
+        model_name = response.model_name
+
+        llm_latency_ms = (
+            perf_counter() - start_time
+        ) * 1000
+
+        # print(f"LLM raw Response: \n{raw_response}\n")
 
         payload, citations = self._citation_parser.parse(
             raw_response=raw_response,
@@ -87,6 +106,12 @@ class GenerateSecurityRecommendations:
             payload=payload,
             citations=citations,
             raw_response=raw_response,
+            retrieval_latency_ms=retrieval_latency_ms,
+            llm_latency_ms=llm_latency_ms,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            provider=provider,
+            model_name=model_name,
         )
 
     def _retrieve(
@@ -115,6 +140,12 @@ class GenerateSecurityRecommendations:
         payload: dict[str, Any],
         citations: tuple[Citation, ...],
         raw_response: str,
+        retrieval_latency_ms: float,
+        llm_latency_ms: float,
+        input_tokens: int,
+        output_tokens: int,
+        provider: str,
+        model_name: str,
     ) -> GroundedRecommendation:
 
         findings = tuple(
@@ -140,6 +171,10 @@ class GenerateSecurityRecommendations:
         
         # print(f"Limitations: \n{limitations}")
 
+        # print(citations)
+
+        # print(type(citations))
+
         return GroundedRecommendation(
             summary=str(payload.get("summary", "")),
             risk_level=str(
@@ -150,4 +185,10 @@ class GenerateSecurityRecommendations:
             limitations=limitations,
             citations=citations,
             raw_response=raw_response,
+            retrieval_latency_ms=retrieval_latency_ms,
+            llm_latency_ms=llm_latency_ms,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            provider=provider,
+            model_name=model_name,
         )

@@ -1,4 +1,13 @@
+from dataclasses import dataclass
 from typing import Protocol
+
+@dataclass(frozen=True)
+class LLMResponse:
+    text: str
+    input_tokens: int
+    output_tokens: int
+    provider: str
+    model_name: str
 
 class LLMPort(Protocol):
 
@@ -7,5 +16,5 @@ class LLMPort(Protocol):
         *,
         system_prompt: str,
         user_prompt: str,
-    ) -> str:
+    ) -> LLMResponse:
         ...

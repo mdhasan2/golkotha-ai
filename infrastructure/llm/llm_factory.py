@@ -9,7 +9,7 @@ def build_llm() -> LLMPort:
         "LLM_PROVIDER",
     ).strip().lower()
 
-    model = os.getenv(
+    model_name = os.getenv(
         "LLM_MODEL",
     ).strip().lower()
 
@@ -17,5 +17,5 @@ def build_llm() -> LLMPort:
 
     if provider == "openai":
         return OpenAILLM(
-            model=model,
+            model_name=model_name,
         )

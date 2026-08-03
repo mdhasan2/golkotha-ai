@@ -82,3 +82,9 @@ class GroundedRecommendation:
 
     citations: tuple[Citation, ...]
     raw_response: str
+    retrieval_latency_ms: float
+    llm_latency_ms: float
+    input_tokens: int
+    output_tokens: int
+    provider: str
+    model_name: str

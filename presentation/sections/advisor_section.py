@@ -4,9 +4,14 @@ import streamlit as st
 
 from app.container import AdvisorContainer
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
+# from application.models.recommendation_result import RecommendationResult
 
 from domain.rag_models import GroundedRecommendation
 from domain.security_models import SecurityAssessmentRequest
+
+from infrastructure.rag.monitored_recommendation_service import (
+    MonitoredRecommendationService,
+)
 
 def render_advisor_section(
         container: AdvisorContainer,
@@ -51,13 +56,18 @@ def render_advisor_section(
         use_container_width=True,
     ):
         try:
-            recommendation = (
-                container
-                .generate_security_recommendations
-                .execute(request)
+            # recommendation = (
+            #     container
+            #     .generate_security_recommendations
+            #     .execute(request)
+            # )
+            result = (
+                    container
+                    .generate_security_recommendations
+                    .execute(request)
             )
-
-            st.session_state.security_recommendation = recommendation
+            st.session_state.security_recommendation = result.recommendation
+            st.session_state.last_interaction_id = result.interaction_id
 
         except Exception as error:
             st.error(

@@ -41,51 +41,79 @@ class StreamlitService:
         self._advisor_container = advisor_container
         
     def run(self) -> None:
+
          st.set_page_config(
-              page_title="GolKotha AI Security Lab",
-              page_icon="🛡️",
-              layout="wide"
+               page_title="GolKotha AI Security Lab",
+               page_icon="🛡️",
+               layout="wide"
+          )
+                   
+         page = st.sidebar.radio(
+              "Navigation",
+              (
+                   "AI Security Workbench",
+                   "RAG Evaluation",
+                   "Monitoring Dashboard",
+              ),
          )
 
-         initialize_session_state()
+         if page == "AI Security Workbench":
+               self.render_security_workbench()
+
+         elif page == "RAG Evaluation":
+               self.render_rag_evaluation()
+
+         elif page == "Monitoring Dashboard":
+               self.render_monitoring_dashboard()
+
+    def render_security_workbench(self) -> None:
+
+          initialize_session_state()
+          
+          st.title("🛡️ GolKotha AI Security Lab")
+
+          st.write(
+               "Inspect a baseline prediction and generate "
+               "grounded AI security recommendations."
+          )
+
+          st.caption(
+               "Current implementation: Baseline Model + RAG "
+               "Security Advisor. SHAP and FGSM are planned."
+          )
+
+          (
+               baseline_tab,
+               explainability_tab,
+               attack_tab,
+               advisor_tab,
+          ) = st.tabs(
+               [
+                    "📊 Baseline Model",
+                    "🔍 Explainability",
+                    "⚔️ Adversarial Attack",
+                    "🛡️ AI Security Advisor",
+               ]
+          )
+
+          with baseline_tab:
+               render_baseline_section(
+                    self._football_api,
+                    container=self._prediction_container,
+               )
+
+          with advisor_tab:
+               render_advisor_section(
+                    container=self._advisor_container,
+               )
+     
+    def render_rag_evaluation(self):
+         ...
+
+    def render_monitoring_dashboard(self):
+         ...  
+
          
-         st.title("🛡️ GolKotha AI Security Lab")
-
-         st.write(
-              "Inspect a baseline prediction and generate "
-              "grounded AI security recommendations."
-         )
-
-         st.caption(
-              "Current implementation: Baseline Model + RAG "
-              "Security Advisor. SHAP and FGSM are planned."
-         )
-
-         (
-              baseline_tab,
-              explainability_tab,
-              attack_tab,
-              advisor_tab,
-         ) = st.tabs(
-              [
-                   "📊 Baseline Model",
-                   "🔍 Explainability",
-                   "⚔️ Adversarial Attack",
-                   "🛡️ AI Security Advisor",
-              ]
-         )
-
-         with baseline_tab:
-              render_baseline_section(
-                   self._football_api,
-                   container=self._prediction_container,
-              )
-
-         with advisor_tab:
-              render_advisor_section(
-                   container=self._advisor_container,
-              )
-    
     def security_question(self) -> str:
             return st.text_area(
                 "Ask an AI security question",
