@@ -123,3 +123,25 @@ class SQLiteMonitoringRepository(MonitoringRepositoryPort):
                     json.dumps(interaction.metadata),
                 ),
             )
+
+    def get_dashboard_metrics(
+        self,
+        limit: int = 1_000,
+    ) -> dict[str, Any]:
+        with self._connect() as connection:
+            interactions = connection.execute(
+                """
+                SELECT *
+                FROM interactions
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+
+        return {
+            "interactions": [
+                dict(row)
+                for row in interactions
+            ],
+        }

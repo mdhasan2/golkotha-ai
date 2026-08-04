@@ -123,9 +123,7 @@ def build_advisor_container(
 
     monitoring_service = MonitoredRecommendationService(
         recommendation_use_case=recommendation_use_case,
-        monitoring_repository=(
-            monitoring_container.repository,
-        ),
+        monitoring_repository=monitoring_container.repository,
         retrieval_strategy="vector",
         prompt_strategy="structured",
     )
