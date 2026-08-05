@@ -11,6 +11,7 @@ from application.use_cases.generate_security_recommendations import (
 )
 from application.use_cases.predict_match import PredictMatch
 from application.use_cases.train_model import TrainModel
+from application.use_cases.record_feedback import RecordFeedback
 
 
 from infrastructure.ml.xgboost_trainer import XGBoostTrainer
