@@ -13,6 +13,8 @@ from infrastructure.rag.monitored_recommendation_service import (
     MonitoredRecommendationService,
 )
 
+from presentation.sections.feedback_section import render_feedback_section
+
 def render_advisor_section(
         container: AdvisorContainer,
 ) -> None:
@@ -66,6 +68,8 @@ def render_advisor_section(
                     .generate_security_recommendations
                     .execute(request)
             )
+
+            
             st.session_state.security_recommendation = result.recommendation
             st.session_state.last_interaction_id = result.interaction_id
 
@@ -87,6 +91,10 @@ def render_advisor_section(
         return
 
     _render_recommendation(recommendation)
+
+    render_feedback_section(
+         container.
+    )
 
 
 def _render_recommendation(
