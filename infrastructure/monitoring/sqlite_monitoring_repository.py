@@ -7,6 +7,7 @@ from application.ports.monitoring_repository import MonitoringRepositoryPort
 
 from domain.monitoring_models import (
     RAGInteraction,
+    UserFeedback,
 )
 
 class SQLiteMonitoringRepository(MonitoringRepositoryPort):
@@ -57,6 +58,16 @@ class SQLiteMonitoringRepository(MonitoringRepositoryPort):
                     metadata TEXT
                 );
 
+                CREATE TABLE IF NOT EXISTS feedback (
+                    feedback_id TEXT PRIMARY KEY,
+                    interaction_id TEXT NOT NULL,
+                    rating INTEGER NOT NULL CHECK (rating IN (-1, 1)),
+                    comment TEXT,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (interaction_id)
+                        REFERENCES interactions(interaction_id)
+                );
+
                 CREATE INDEX IF NOT EXISTS
                     idx_interactions_created_at
                 ON interactions (created_at);
@@ -64,6 +75,10 @@ class SQLiteMonitoringRepository(MonitoringRepositoryPort):
                 CREATE INDEX IF NOT EXISTS
                     idx_interactions_strategy
                 ON interactions (retrieval_strategy);
+
+                CREATE INDEX IF NOT EXISTS
+                    idx_feedback_interaction
+                ON feedback(interaction_id);
                 """
             )
 
@@ -124,6 +139,49 @@ class SQLiteMonitoringRepository(MonitoringRepositoryPort):
                 ),
             )
 
+    def save_feedback(
+        self,
+        feedback: UserFeedback,
+    ) -> None:
+        print("Saving feedback:", feedback)
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO feedback (
+                    feedback_id,
+                    interaction_id,
+                    rating,
+                    comment,
+                    created_at
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    feedback.feedback_id,
+                    feedback.interaction_id,
+                    feedback.rating,
+                    feedback.comment,
+                    feedback.created_at.isoformat(),
+                ),
+            )
+
+    def feedback_exists(
+        self,
+        interaction_id: str,
+        ) -> bool:
+            with self._connect() as connection:
+                row = connection.execute(
+                    """
+                    SELECT 1
+                    FROM feedback
+                    WHERE interaction_id = ?
+                    LIMIT 1
+                    """,
+                    (interaction_id,),
+                ).fetchone()
+
+            return row is not None
+    
     def get_dashboard_metrics(
         self,
         limit: int = 1_000,

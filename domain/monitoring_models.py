@@ -80,3 +80,29 @@ class RAGInteraction:
             metadata=metadata or {},
         )
 
+@dataclass(frozen=True)
+class UserFeedback:
+    feedback_id: str
+    interaction_id: str
+    rating: int
+    comment: str | None
+    created_at: datetime
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        interaction_id: str,
+        rating: int,
+        comment: str | None = None,
+    ) -> "UserFeedback":
+        if rating not in (-1, 1):
+            raise ValueError("Feedback rating must be -1 or 1.")
+
+        return cls(
+            feedback_id=str(uuid4()),
+            interaction_id=interaction_id,
+            rating=rating,
+            comment=comment,
+            created_at=utc_now(),
+        )

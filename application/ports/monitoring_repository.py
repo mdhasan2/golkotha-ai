@@ -1,6 +1,6 @@
 from typing import Any, Protocol
 
-from domain.monitoring_models import RAGInteraction
+from domain.monitoring_models import RAGInteraction, UserFeedback
 
 class MonitoringRepositoryPort(Protocol):
 
@@ -8,6 +8,18 @@ class MonitoringRepositoryPort(Protocol):
         self,
         interaction: RAGInteraction,
     ) -> None:
+        ...
+
+    def save_feedback(
+        self,
+        feedback: UserFeedback,
+    ) -> None:
+        ...
+
+    def feedback_exists(
+        self,
+        interaction_id: str,
+    ) -> bool:
         ...
 
     def get_dashboard_metrics(

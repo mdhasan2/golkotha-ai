@@ -74,6 +74,7 @@ class AdvisorContainer:
 @dataclass(frozen=True)
 class MonitoringContainer:
     repository: SQLiteMonitoringRepository
+    record_feedback: RecordFeedback
 
 def build_training_container() -> TrainingContainer:
     trainer = XGBoostTrainer()
@@ -143,4 +144,7 @@ def build_monitoring_container(
 
     return MonitoringContainer(
         repository=repository,
+        record_feedback=RecordFeedback(
+            repository
+        )
     )

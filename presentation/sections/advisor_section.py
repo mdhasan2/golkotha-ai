@@ -2,7 +2,10 @@ from typing import Any
 
 import streamlit as st
 
-from app.container import AdvisorContainer
+from app.container import (
+     AdvisorContainer,
+     MonitoringContainer,
+)
 from application.use_cases.generate_security_recommendations import GenerateSecurityRecommendations
 # from application.models.recommendation_result import RecommendationResult
 
@@ -16,8 +19,13 @@ from infrastructure.rag.monitored_recommendation_service import (
 from presentation.sections.feedback_section import render_feedback_section
 
 def render_advisor_section(
-        container: AdvisorContainer,
+        advisor_container: AdvisorContainer,
+        monitoring_container: MonitoringContainer,
 ) -> None:
+    print("security_recommendation:", st.session_state.get("security_recommendation"))
+
+    print("last_interaction_id:", st.session_state.get("last_interaction_id"))
+    
     st.header("4. AI Security Advisor")
 
     st.warning(
@@ -64,7 +72,7 @@ def render_advisor_section(
             #     .execute(request)
             # )
             result = (
-                    container
+                    advisor_container
                     .generate_security_recommendations
                     .execute(request)
             )
@@ -90,12 +98,27 @@ def render_advisor_section(
         )
         return
 
+    st.write(st.session_state)
+    
     _render_recommendation(recommendation)
 
-    render_feedback_section(
-         container.
+    interaction_id = st.session_state.get(
+         "last_interaction_id"
     )
 
+    print("About to render feedback")
+    print(st.session_state.get("last_interaction_id"))
+
+    if interaction_id is not None:
+         
+         print("About to render feedback")
+         print(st.session_state.get("last_interaction_id"))
+         render_feedback_section(
+              record_feedback=(
+                   monitoring_container.record_feedback
+              ),
+              interaction_id=interaction_id,  
+    )
 
 def _render_recommendation(
     recommendation: GroundedRecommendation,

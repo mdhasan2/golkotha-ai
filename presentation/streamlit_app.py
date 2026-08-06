@@ -113,7 +113,8 @@ class StreamlitService:
 
           with advisor_tab:
                render_advisor_section(
-                    container=self._advisor_container,
+                    advisor_container=self._advisor_container,
+                    monitoring_container=self._monitoring_container,
                )
      
     def render_rag_evaluation(self):

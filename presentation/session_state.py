@@ -11,6 +11,7 @@ DEFAULT_STATE: dict[str, Any] = {
     "away_team": None,
 
     "security_recommendation": None,
+    "last_interaction_id": None,
 }
 
 def initialize_session_state() -> None:
@@ -19,6 +20,7 @@ def initialize_session_state() -> None:
             st.session_state[key] = default_value
 
 def clear_previous_analysis() -> None:
+    print("CLEARING ANALYSIS")
     st.session_state.baseline_prediction = None
     st.session_state.baseline_features = None
 
