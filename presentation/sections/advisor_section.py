@@ -22,9 +22,9 @@ def render_advisor_section(
         advisor_container: AdvisorContainer,
         monitoring_container: MonitoringContainer,
 ) -> None:
-    print("security_recommendation:", st.session_state.get("security_recommendation"))
+    # print("security_recommendation:", st.session_state.get("security_recommendation"))
 
-    print("last_interaction_id:", st.session_state.get("last_interaction_id"))
+    # print("last_interaction_id:", st.session_state.get("last_interaction_id"))
     
     st.header("4. AI Security Advisor")
 
@@ -98,7 +98,7 @@ def render_advisor_section(
         )
         return
 
-    st.write(st.session_state)
+    # st.write(st.session_state)
     
     _render_recommendation(recommendation)
 

@@ -10,6 +10,14 @@ class RecordFeedback:
     ) -> None:
         self.repository = repository
 
+    def has_feedback(
+        self,
+        interaction_id: str,
+    ) -> bool:
+        return self.repository.feedback_exists(
+            interaction_id
+        )
+
     def execute(
         self,
         *,

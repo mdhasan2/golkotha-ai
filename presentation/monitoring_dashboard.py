@@ -25,8 +25,14 @@ class MonitoringDashboard:
             .get_dashboard_metrics()
         )
 
+        print(payload)
+
         interactions = pd.DataFrame(
             payload["interactions"]
+        )
+
+        feedback = pd.DataFrame(
+            payload["feedback"]
         )
 
         if interactions.empty:
@@ -59,6 +65,7 @@ class MonitoringDashboard:
 
         self._render_summary_metrics(
             interactions,
+            feedback,
         )
 
         st.divider()
@@ -73,6 +80,23 @@ class MonitoringDashboard:
 
         self._latency_breakdown(
             interactions
+        )
+
+        self._feedback_distribution(
+            feedback
+        )
+
+        self._feedback_rate_over_time(
+            interactions,
+            feedback,
+        )
+
+        self._helpful_percentage_over_time(
+            feedback,
+        )
+
+        self._feedback_sentiment_over_time(
+            feedback,
         )
 
         self._strategy_usage(
@@ -102,6 +126,7 @@ class MonitoringDashboard:
     @staticmethod
     def _render_summary_metrics(
         interactions: pd.DataFrame,
+        feedback: pd.DataFrame,
     ) -> None:
         total_requests = len(interactions)
 
@@ -118,11 +143,22 @@ class MonitoringDashboard:
             interactions["latency_ms"].mean()
         )
 
+        feedback_count = len(feedback)
+
+        positive_feedback_rate = 0.0
+
+        if not feedback.empty:
+            positive_feedback_rate = (
+                feedback["rating"]
+                .eq(1)
+                .mean()
+            )
+
         total_cost = interactions[
             "estimated_cost_usd"
         ].sum()
 
-        columns = st.columns(4)
+        columns = st.columns(6)
 
         columns[0].metric(
             "Total requests",
@@ -140,9 +176,20 @@ class MonitoringDashboard:
         )
 
         columns[3].metric(
-            "Estimated cost",
-            f"${total_cost:.4f}",
+            "Feedback responses",
+            feedback_count,
         )
+
+        columns[4].metric(
+            "Helpful feedback",
+            f"{positive_feedback_rate:.1%}",
+        )
+
+        columns[5].metric(
+                    "Estimated cost",
+                    f"${total_cost:.4f}",
+                )
+        
 
     @staticmethod
     def _requests_over_time(
@@ -224,6 +271,220 @@ class MonitoringDashboard:
         )
 
     @staticmethod
+    def _feedback_distribution(
+        feedback: pd.DataFrame,
+    ) -> None:
+        if feedback.empty:
+            st.info(
+                "4. No user feedback has been "
+                "submitted yet."
+            )
+            return
+
+        distribution = (
+            feedback["rating"]
+            .map({
+                1: "Helpful",
+                -1: "Not helpful",
+                })
+                .value_counts()
+                .reset_index()
+        )
+
+        distribution.columns = [
+            "rating",
+            "count",
+        ]
+
+        figure = px.pie(
+            distribution,
+            names="rating",
+            values="count",
+            title="4. User feedback distribution",
+        )
+
+        st.plotly_chart(
+            figure,
+            width='stretch'
+        )
+
+    @staticmethod
+    def _feedback_rate_over_time(
+        interactions: pd.DataFrame,
+        feedback: pd.DataFrame,
+    ) -> None:
+        daily_requests = (
+            interactions
+            .set_index("created_at")
+            .resample("D")
+            .size()
+            .rename("requests")
+        )
+
+        if feedback.empty:
+            daily_feedback = pd.Series(
+                dtype=float,
+                name="feedback_count",
+            )
+        else:
+            feedback = feedback.copy()
+
+            feedback["created_at"] = (
+                pd.to_datetime(
+                    feedback["created_at"],
+                    utc=True,
+                )
+            )
+
+            daily_feedback = (
+                feedback
+                .set_index("created_at")
+                .resample("D")
+                .size()
+                .rename("feedback_count")
+            )
+
+        combined = pd.concat(
+            [
+                daily_requests,
+                daily_feedback,
+            ],
+            axis=1,
+        ).fillna(0)
+
+        combined["feedback_rate"] = (
+            combined["feedback_count"]
+            / combined["requests"].replace(0, pd.NA)
+        ).fillna(0)
+
+        combined = combined.reset_index()
+
+        figure = px.line(
+            combined,
+            x="created_at",
+            y="feedback_rate",
+            title="5. Feedback response rate",
+            markers=True,
+        )
+
+        st.plotly_chart(
+            figure,
+            width='stretch'
+        )
+
+    @staticmethod
+    def _helpful_percentage_over_time(
+        feedback: pd.DataFrame,
+    ) -> None:
+
+        if feedback.empty:
+            st.info(
+                "No feedback has been collected yet."
+            )
+            return
+
+        feedback = feedback.copy()
+
+        feedback["created_at"] = pd.to_datetime(
+            feedback["created_at"],
+            utc=True,
+        )
+
+        feedback["helpful"] = (
+            feedback["rating"] == 1
+        ).astype(int)
+
+        daily = (
+            feedback
+            .set_index("created_at")
+            .resample("D")
+            .agg(
+                helpful=("helpful", "sum"),
+                total=("helpful", "count"),
+            )
+            .reset_index()
+        )
+
+        daily["helpful_percentage"] = (
+            daily["helpful"]
+            / daily["total"]
+            * 100
+        )
+
+        figure = px.line(
+            daily,
+            x="created_at",
+            y="helpful_percentage",
+            title="6. Helpful feedback percentage",
+            markers=True,
+        )
+
+        figure.update_yaxes(
+            title="Helpful %",
+            range=[0, 100],
+        )
+
+        st.plotly_chart(
+            figure,
+            width='stretch'
+        )
+        
+    @staticmethod    
+    def _feedback_sentiment_over_time(
+        feedback: pd.DataFrame,
+    ) -> None:
+
+        if feedback.empty:
+            st.info(
+                "No feedback has been collected yet."
+            )
+            return
+
+        feedback = feedback.copy()
+
+        feedback["created_at"] = pd.to_datetime(
+            feedback["created_at"],
+            utc=True,
+        )
+
+        feedback["sentiment"] = feedback["rating"].map(
+            {
+                1: "Helpful",
+                -1: "Not Helpful",
+            }
+        )
+
+        daily = (
+            feedback
+            .groupby(
+                [
+                    pd.Grouper(
+                        key="created_at",
+                        freq="D",
+                    ),
+                    "sentiment",
+                ]
+            )
+            .size()
+            .reset_index(name="count")
+        )
+
+        figure = px.bar(
+            daily,
+            x="created_at",
+            y="count",
+            color="sentiment",
+            title="7. Helpful vs Not Helpful",
+            barmode="stack",
+        )
+
+        st.plotly_chart(
+            figure,
+            width='stretch'
+        )
+
+
+    @staticmethod
     def _strategy_usage(
         interactions: pd.DataFrame,
     ) -> None:
@@ -244,7 +505,7 @@ class MonitoringDashboard:
             usage,
             x="strategy",
             y="requests",
-            title="6. Retrieval strategy usage",
+            title="8. Retrieval strategy usage",
         )
 
         st.plotly_chart(
@@ -275,7 +536,7 @@ class MonitoringDashboard:
             daily,
             x="created_at",
             y="error",
-            title="7. Error rate over time",
+            title="9. Error rate over time",
             markers=True,
         )
 
@@ -292,7 +553,7 @@ class MonitoringDashboard:
             interactions,
             x="citation_count",
             title=(
-                "8. Citations per recommendation"
+                "10. Citations per recommendation"
             ),
         )
 
@@ -309,7 +570,7 @@ class MonitoringDashboard:
             interactions,
             x="created_at",
             y="total_tokens",
-            title="9. Token usage per request",
+            title="11. Token usage per request",
             hover_data=[
                 "retrieval_strategy",
                 "prompt_strategy",
@@ -338,7 +599,7 @@ class MonitoringDashboard:
             daily,
             x="created_at",
             y="estimated_cost_usd",
-            title="10. Estimated cost over time",
+            title="12. Estimated cost over time",
             markers=True,
             labels={
                 "created_at": "Date",

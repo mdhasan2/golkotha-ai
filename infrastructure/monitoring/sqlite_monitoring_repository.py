@@ -197,9 +197,23 @@ class SQLiteMonitoringRepository(MonitoringRepositoryPort):
                 (limit,),
             ).fetchall()
 
+            feedback = connection.execute(
+                """
+                SELECT *
+                FROM feedback
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+
         return {
             "interactions": [
                 dict(row)
                 for row in interactions
+            ],
+            "feedback": [
+                dict(row)
+                for row in feedback
             ],
         }
