@@ -1,28 +1,85 @@
-# GolKotha AI
+# 🛡️ GolKotha AI Security Lab
 
-> An AI Security Lab for demonstrating Machine Learning, Explainable AI (XAI), Adversarial Machine Learning (AML), and Retrieval-Augmented Generation (RAG).
+> An AI Security Lab for demonstrating Machine Learning, Retrieval-Augmented Generation (RAG). AI Security evaluation, and monitoring, with Explainable AI (XAI) and Adversarial Machine Learning (AML) planned as future extensions.
 
 ## Overview
 
-GolKotha AI is an educational AI Security Lab that demonstrates how modern AI systems can be evaluated, attacked, explained, and secured.
+<!-- GolKotha AI is an educational AI Security Lab that demonstrates how modern AI systems can be evaluated, attacked, explained, and secured. -->
 
-The project began as a machine learning application for predicting football match outcomes and has evolved into a modular platform for AI security research using Clean Architecture and SOLID principles.
+GolKotha AI began as a machine learning application for predicting football match outcomes and has evolved into an educational AI Security Lab built using Clean Architecture and SOLID principles.
 
-The lab allows users to:
+The project demonstrate how a traditional machine application can be extended with AI security capabilities.
+
+The current implementation combines:
+
+- ⚽ XGBoost-based football match prediction
+- 🔎 Retrieval-Augmented Generation (RAG)
+- 🛡️ AI-generated security assessments
+- 📚 Citation-grounded security recommendations
+- 👍👎 Human feedback collection
+- 📊 RAG evaluation
+- 📈 Operational monitoring
+
+<!-- The lab allows users to:
 
 * Train and evaluate machine learning models
 * Explain model predictions using SHAP
 * Demonstrate adversarial attacks against AI models
-* Generate grounded security recommendations using Retrieval-Augmented Generation (RAG)
+* Generate grounded security recommendations using Retrieval-Augmented Generation (RAG) -->
+
+Explainable AI using SHAP and adversarial testing using FGSM are planned extenstions.
+
+---
+
+## Current Workflow
+
+```text
+Football Match Data
+        │
+        ▼
+Feature Engineering
+        │
+        ▼
+XGBoost Model
+        │
+        ▼
+Baseline Prediction
+        │
+        ├─────────────────────────────┐
+        │                             │
+        ▼                             ▼
+Prediction Context             Security Knowledge Base
+        │                             │
+        │                       Vector Retrieval
+        │                             │
+        └──────────────┬──────────────┘
+                       ▼
+               RAG Security Advisor
+                       │
+                       ▼
+              Grounded Recommendation
+                       │
+              ┌────────┴─────────┐
+              ▼                  ▼
+           Citations          Feedback
+                                 │
+                                 ▼
+                         Monitoring Database
+                                 │
+                                 ▼
+                         Monitoring Dashboard
+```
 
 ---
 
 ## Architecture
 
+GolKotha AI follows Clean Architecture to seperate domain logic from infrastructure and presentation concerns.
+
 ```
                 ┌────────────────────────────┐
                 │      Presentation Layer    │
-                │      Streamlit UI/API      │
+                │      Streamlit UI          │
                 └──────────────┬─────────────┘
                                │
                 ┌──────────────▼─────────────┐
@@ -37,48 +94,36 @@ The lab allows users to:
                                │
                 ┌──────────────▼─────────────┐
                 │    Infrastructure Layer    │
-                │ ML • APIs • Vector Store   │
+                │ ML • RAG • DB • LLM • APIs │
                 └────────────────────────────┘
 ```
 
----
-
-## Project Structure
-
-```
-golkotha-ai/
-│
-├── app/
-├── application/
-├── clients/
-├── data/
-├── docs/
-├── domain/
-├── features/
-├── infrastructure/
-├── ml/
-├── models/
-├── presentation/
-├── services/
-├── tests/
-│
-├── api.py
-├── config.py
-├── enums.py
-├── main.py
-└── pyproject.toml
-```
+This design keeps the core application independent of technologies such as Streamlit, SQLite, ChromaDB, and the LLM provider.
 
 ---
 
-## Features
+# Features
 
-### Machine Learning
+## 1. 📊 Baseline Machine Learning Model
 
+The baseline workflow builds football match features and uses an XGBoost classifier to predict the match outcome.
+
+The interface displays:
+
+- Prediction
+- Predicted-team confidence
+- Probability for each team
+- Probability distribution
+
+### Example
+
+![Baseline Model](docs/images/baseline-model.png)
+
+<!-- 
 * Feature engineering
 * Dataset creation
 * XGBoost prediction model
-* Model evaluation
+* Model evaluation -->
 
 ---
 
@@ -118,18 +163,6 @@ The generated recommendations are grounded using retrieved documentation and cit
 
 ---
 
-## Current Development Status
-
-| Phase                                  | Status         |
-| -------------------------------------- | -------------- |
-| Phase 1 – Clean Architecture Refactor  | ✅ Complete     |
-| Phase 2 – Explainable AI               | ⏭ Deferred     |
-| Phase 3 – Adversarial ML               | ⏭ Deferred     |
-| Phase 4 – Security Evaluation          | ⏭ Deferred     |
-| Phase 5 – RAG Security Recommendations | 🚧 In Progress |
-
----
-
 ## Technology Stack
 
 * Python
@@ -142,6 +175,46 @@ The generated recommendations are grounded using retrieved documentation and cit
 * ChromaDB (planned)
 * Sentence Transformers (planned)
 * LangChain (planned)
+
+---
+
+## Project Structure
+
+```
+golkotha-ai/
+│
+├── app/
+├── application/
+├── clients/
+├── data/
+├── docs/
+├── domain/
+├── features/
+├── infrastructure/
+├── ml/
+├── models/
+├── presentation/
+├── services/
+├── tests/
+│
+├── api.py
+├── config.py
+├── enums.py
+├── main.py
+└── pyproject.toml
+```
+
+---
+
+## Current Development Status
+
+| Phase                                  | Status         |
+| -------------------------------------- | -------------- |
+| Phase 1 – Clean Architecture Refactor  | ✅ Complete     |
+| Phase 2 – Explainable AI               | ⏭ Deferred     |
+| Phase 3 – Adversarial ML               | ⏭ Deferred     |
+| Phase 4 – Security Evaluation          | ⏭ Deferred     |
+| Phase 5 – RAG Security Recommendations | 🚧 In Progress |
 
 ---
 
@@ -203,6 +276,10 @@ This project demonstrates the complete lifecycle of AI security:
 * Improve evaluation dashboards
 
 ---
+
+# Demo
+
+# Disclaimer
 
 ## License
 
