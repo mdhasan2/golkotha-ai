@@ -119,6 +119,8 @@ The interface displays:
 
 ![Baseline Model](docs/images/baseline-model.png)
 
+The current demonstration prdicts a match between Argentina and Spain and displays the probability assigned to each outcome.
+
 <!-- 
 * Feature engineering
 * Dataset creation
@@ -127,30 +129,73 @@ The interface displays:
 
 ---
 
-### Explainable AI (XAI)
+## 2. 🔍 Explainable AI (XAI)
 
-* SHAP Feature Importance
+**Status: Deferred / Planned**
+
+SHAP explainability is planned to provide:
+
+- Local prediction explanations
+- Global feature importance
+- SHAP Waterfall plots
+- Feature contribution analysis
+
+The UI already reserves an Explainability stage so it can be integrated into the existing workflow.
+
+<!-- * SHAP Feature Importance
 * SHAP Waterfall plots
 * Global explanations
-* Local explanations
+* Local explanations -->
 
 ---
 
-### Adversarial Machine Learning (AML)
+## 3. ⚔️ Adversarial Machine Learning (AML)
 
-Planned demonstrations include:
+**Status: Deferred / Planned**
+
+The adversarial ML stage will deomonstrate how intentionally modified inputs affect model bahavior.
+
+The initial planned implementation uses IBM Adversarial Robustness Toolbox (ART) and FGSM.
+
+Planned capabilities include:
+
+- Configurable FGSM epsilon
+- Original vs. attacked prediction
+- Probability comparison
+- Attack success measurement
+- Adversarial robustness analysis
+
+<!-- Planned demonstrations include:
 
 * FGSM
 * PGD
 * Feature manipulation attacks
 * Prediction comparison
-* Attack visualization
+* Attack visualization -->
 
 ---
 
-### Retrieval-Augmented Generation (RAG)
+## 4. 🛡️ AI Security Advisor
 
-The recommendation engine uses security knowledge from:
+The AI Security Advisor evaluates the available model and prediction context and generates a security assessment.
+
+![AI Security Advisor](docs/images/security-advisor.png)
+
+The assessment includes:
+
+- Executive summary
+- Preliminary risk level
+- Security findings
+- Recommended limitations
+- Supporting RAG references
+
+Because SHAP and adversarial testing are currently deferred, the application explicitly identifies the assessment as a **baseline-only security assessment**.
+
+## 5. 📚 Retrieval-Augmented Generation (RAG)
+
+GolKotha AI uses Retrieval-Augmented Generation to ground security recommendations in trusted AI security documentation.
+
+The knowledge base can contain guidance from sources such as:
 
 * MITRE ATLAS
 * NIST AI Risk Management Framework
@@ -159,7 +204,43 @@ The recommendation engine uses security knowledge from:
 * Microsoft AI Security Guidance
 * Academic adversarial ML research
 
-The generated recommendations are grounded using retrieved documentation and citations.
+The RAG workflow is apporximately: 
+
+```text
+Security Assessment Request
+        │
+        ▼
+Security Query Builder
+        │
+        ▼
+Embedding Model
+        │
+        ▼
+Chroma Vector Store
+        │
+        ▼
+Relevant Security Chunks
+        │
+        ▼
+Security Prompt Builder
+        │
+        ▼
+LLM
+        │
+        ▼
+Grounded Recommendation
+        │
+        ▼
+Citation Validation
+```
+
+### Grounded References
+
+The applicatoin exposes the references supporting the generated recommendation.
+
+![RAG References](docs/images/rag-references.png)
+
+This makes it possible to trace recommendations back to retrived security guidance instead of relying entirely on unsupported LLM output.
 
 ---
 
