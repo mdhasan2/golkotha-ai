@@ -4,8 +4,6 @@
 
 ## Overview
 
-<!-- GolKotha AI is an educational AI Security Lab that demonstrates how modern AI systems can be evaluated, attacked, explained, and secured. -->
-
 GolKotha AI began as a machine learning application for predicting football match outcomes and has evolved into an educational AI Security Lab built using Clean Architecture and SOLID principles.
 
 The project demonstrate how a traditional machine application can be extended with AI security capabilities.
@@ -19,13 +17,6 @@ The current implementation combines:
 - 👍👎 Human feedback collection
 - 📊 RAG evaluation
 - 📈 Operational monitoring
-
-<!-- The lab allows users to:
-
-* Train and evaluate machine learning models
-* Explain model predictions using SHAP
-* Demonstrate adversarial attacks against AI models
-* Generate grounded security recommendations using Retrieval-Augmented Generation (RAG) -->
 
 Explainable AI using SHAP and adversarial testing using FGSM are planned extenstions.
 
@@ -121,12 +112,6 @@ The interface displays:
 
 The current demonstration prdicts a match between Argentina and Spain and displays the probability assigned to each outcome.
 
-<!-- 
-* Feature engineering
-* Dataset creation
-* XGBoost prediction model
-* Model evaluation -->
-
 ---
 
 ## 2. 🔍 Explainable AI (XAI)
@@ -141,11 +126,6 @@ SHAP explainability is planned to provide:
 - Feature contribution analysis
 
 The UI already reserves an Explainability stage so it can be integrated into the existing workflow.
-
-<!-- * SHAP Feature Importance
-* SHAP Waterfall plots
-* Global explanations
-* Local explanations -->
 
 ---
 
@@ -164,14 +144,6 @@ Planned capabilities include:
 - Probability comparison
 - Attack success measurement
 - Adversarial robustness analysis
-
-<!-- Planned demonstrations include:
-
-* FGSM
-* PGD
-* Feature manipulation attacks
-* Prediction comparison
-* Attack visualization -->
 
 ---
 
@@ -225,7 +197,7 @@ Relevant Security Chunks
 Security Prompt Builder
         │
         ▼
-LLM
+       LLM
         │
         ▼
 Grounded Recommendation
@@ -262,10 +234,6 @@ Duplicate feedback for the same interaction is prevented.
 ## 7. RAG Evaluation
 
 GolKotha AI records RAG interactions so the behabior of the system can be monitored over time.
-
-<!-- The RAG Evaluation section is designed to measure the quality and behavior of the recommendation pipeline.
-
-Evaluation  -->
 
 The monitoring layer tracks metrics such as:
 
@@ -375,13 +343,6 @@ The recommended dependency manager is `uv`.
 ```bash
 uv sync
 ```
-
-<!-- or
-
-```bash
-pip install -e .
-``` -->
-
 ---
 
 # Environment Configuration
@@ -548,23 +509,6 @@ Monitoring Dashbaord
 These views provide visibility into the behavior, performance, cost, citations, errors, and user feedback associated with the RAG pipeline.
 
 ---
----
----
-
-
-<!-- ## Running the Application
-
-```bash
-python main.py
-```
-
-or
-
-```bash
-streamlit run app/streamlit_app.py
-``` -->
-
----
 
 # Current Development Status
 
@@ -601,13 +545,6 @@ Grounded Security Recommendations
        ↓
 Evaluation + Monitoring
 ```
-
-<!-- 1. Train a machine learning model.
-2. Explain how the model makes decisions.
-3. Attack the model using adversarial techniques.
-4. Measure the impact of the attack.
-5. Retrieve trusted security guidance.
-6. Generate grounded AI security recommendations. -->
 
 The project intentionally seperates these capabilities so each security concept can be implemented, tested, and evaluated independently.
 
