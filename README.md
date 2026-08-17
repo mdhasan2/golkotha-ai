@@ -163,6 +163,8 @@ The assessment includes:
 
 Because SHAP and adversarial testing are currently deferred, the application explicitly identifies the assessment as a **baseline-only security assessment**.
 
+---
+
 ## 5. 📚 Retrieval-Augmented Generation (RAG)
 
 GolKotha AI uses Retrieval-Augmented Generation to ground security recommendations in trusted AI security documentation.
