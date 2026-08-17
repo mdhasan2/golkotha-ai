@@ -244,22 +244,94 @@ This makes it possible to trace recommendations back to retrived security guidan
 
 ---
 
-## Technology Stack
+## 6. 👍 Human Feedback
 
-* Python
-* Streamlit
-* XGBoost
-* Pandas
-* NumPy
-* Scikit-learn
-* SHAP
-* ChromaDB (planned)
-* Sentence Transformers (planned)
-* LangChain (planned)
+Users can evaluate generated security recommendations as:
+
+- 👍 Helpful
+- 👎 Not Helpful
+
+![Recommendation Feedback](docs/images/feedback.png)
+
+Feedback is associated with the generated interaction and stored for later evaluation.
+
+Duplicate feedback for the same interaction is prevented.
 
 ---
 
-## Project Structure
+## 7. RAG Evaluation
+
+GolKotha AI records RAG interactions so the behabior of the system can be monitored over time.
+
+<!-- The RAG Evaluation section is designed to measure the quality and behavior of the recommendation pipeline.
+
+Evaluation  -->
+
+The monitoring layer tracks metrics such as:
+
+- Requests over time
+- Total latency
+- Retrieval latency
+- LLM latency
+- Retrieval strategy usage
+- Error rate
+- Citation distribution
+- Token rate
+- Citation distribution
+- Token usage
+- Estimated LLM cost
+- Helpful vs. not-helpful feecback
+
+This provides observability into both the operational performance and quality of the RAG pipeline.
+
+---
+
+# Technology Stack
+
+| Component | Technology |
+|---|---|
+| Language | Python |
+| UI | Streamlit |
+| ML Model | XGBoost |
+| Data Processing | Pandas / NumPy |
+| ML Utilities | Scikit-learn |
+| Vector Database | ChromaDB |
+| Embeddings | Sentence Transformers |
+| LLM | Configurable LLM provider |
+| Monitoring Storage | SQLite |
+| Visualization | Plotly |
+| Dependency Management | uv |
+| Planned XAI | SHAP |
+| Planned AML | IBM ART / FGSM |
+
+---
+
+# Project Structure
+
+```text
+golkotha-ai/
+│
+├── app/                    # Dependency injection / containers
+├── application/            # Application use cases
+├── clients/                # External clients
+├── data/                   # ML datasets
+├── docs/                   # Documentation and screenshots
+├── domain/                 # Domain models and interfaces
+├── features/               # Feature engineering
+├── infrastructure/         # RAG, monitoring, repositories, APIs
+├── knowledge/              # RAG knowledge base / vector store
+├── ml/                     # Machine learning components
+├── models/                 # Trained model artifacts
+├── presentation/           # Streamlit UI
+├── scripts/                # Initialization/build scripts
+├── services/               # Application services
+├── tests/                  # Automated tests
+│
+├── main.py
+├── config.py
+├── pyproject.toml
+└── README.md
+```
 
 ```
 golkotha-ai/
@@ -287,37 +359,200 @@ golkotha-ai/
 
 ---
 
-## Current Development Status
-
-| Phase                                  | Status         |
-| -------------------------------------- | -------------- |
-| Phase 1 – Clean Architecture Refactor  | ✅ Complete     |
-| Phase 2 – Explainable AI               | ⏭ Deferred     |
-| Phase 3 – Adversarial ML               | ⏭ Deferred     |
-| Phase 4 – Security Evaluation          | ⏭ Deferred     |
-| Phase 5 – RAG Security Recommendations | 🚧 In Progress |
-
----
-
 ## Installation
+
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/mdhasan2/golkotha-ai.git
-
 cd golkotha-ai
+```
 
+## 2. Install Dependencies
+
+The recommended dependency manager is `uv`.
+
+```bash
 uv sync
+```
+
+<!-- or
+
+```bash
+pip install -e .
+``` -->
+
+---
+
+# Environment Configuration
+
+Create a `.env ` file in the project root.
+
+Example:
+
+```env
+LLM_PROVIDER=openai
+LLM_MODEL=<your-model>
+OPENAI_API_KEY=<your-api-key>
+```
+
+Do not commit API keys or your `.env` file to Git.
+
+---
+
+# Build the RAG Knowledge Base
+
+Before using the AI Security Advisor, initialize the security knowledge base.
+
+```bash
+uv run python -m scripts.build_knowledge_base
+```
+
+The ingestion pipeline processes the configured security doucments, chunks their content, generates embeddings, and stores the resulting vectors in ChromaDB.
+
+> The generated vector database should normally remain outside version control and be rebuilt from the configured knowledge sources.
+
+---
+
+# Initialize Monitoring
+
+Intialize the SQLite monitoring database:
+
+```bash
+uv run python -m scripts.initialize_monitoring_database
+```
+
+This creates the database structures used for RAG interaction and feedback monitoring.
+
+---
+
+# Run GolKotha AI
+
+Start the Streamlit applcation from the project root:
+
+```bash
+uv run streamlit run main.py
+```
+
+Streamlit will start the application and display a local URL similar to:
+
+```text
+Local URL: http://localhost:8501
+```
+
+Open the displayed URL in your browser.
+
+![Starting GolKotha AI](docs/images/startup.png)
+
+---
+
+# Using the Application
+
+## Step 1 - Run the Baseline Model
+
+Navigate to:
+
+**AI Security Workbench -> Baseline Model**
+
+Click:
+
+```text
+⚙️ Build Features & Predict
+```
+
+The application builds the match features and runs the XGBoost model.
+
+![Run Baseline](docs/images/baseline-model.png)
+
+Review the predicted outcome, confidence, and probability distribution.
+
+---
+
+## Step 2 - Generate a Security Assessment
+
+Select: 
+
+**AI Security Advisor**
+
+Then click:
+
+```text
+Generate Baseline Security Assessment
+```
+
+![Generate Assessment](docs/images/generate-assessment.png)
+
+Golkotha AI sends the model and prediction context through the RAG security workflow.
+
+---
+
+## Step 3 - Review the Security Assessment
+
+The generated assessment contains:
+
+1. Executive summary
+2. Preliminary risk
+3. Security findings
+4. Recommended mitigations
+5. Analysis limitations
+6. Supporting references
+
+![Security Assessment](docs/images/security-advisor.png)
+
+---
+
+## Step 4 - Inspect RAG References
+
+Scroll to **Supporting RAG references**.
+
+![Supporting References](docs/images/rag-references.png)
+
+Each citation identifies the retrieved security material used to ground the recommendation.
+
+---
+
+## Step 5 - Provide Feedback
+
+At the bottom of the assessment, select:
+
+```text
+👍 Helpful
 ```
 
 or
 
-```bash
-pip install -e .
+```text
+👎 Not Helpful
 ```
+
+![Feedback](docs/images/feedback.png)
+
+The feedback is persisted for RAG evaluation and monitoring.
 
 ---
 
-## Running the Application
+## Step 6 - Review Evaluation and Monitoring
+
+Use the navigation menu to open:
+
+```text
+RAG Evaluation
+```
+
+or:
+
+```text
+Monitoring Dashbaord
+```
+
+These views provide visibility into the behavior, performance, cost, citations, errors, and user feedback associated with the RAG pipeline.
+
+---
+---
+---
+
+
+<!-- ## Running the Application
 
 ```bash
 python main.py
@@ -327,41 +562,101 @@ or
 
 ```bash
 streamlit run app/streamlit_app.py
-```
+``` -->
 
 ---
 
-## Research Goal
+# Current Development Status
 
-This project demonstrates the complete lifecycle of AI security:
+| Phase | Capability | Status |
+|---|---|---|
+| Phase 1 | Clean Architecture Refactor | ✅ Complete |
+| Phase 2 | SHAP Explainability | ⏭ Deferred |
+| Phase 3 | FGSM Adversarial ML | ⏭ Deferred |
+| Phase 4 | Security Evaluation | ⏭ Deferred |
+| Phase 5 | RAG Security Advisor | ✅ Implemented |
+| Phase 6 | AI Security Workbench | ✅ Implemented |
+| Phase 7 | RAG Evaluation & Monitoring | 🚧 In Progress |
 
-1. Train a machine learning model.
+---
+
+# Research Goal
+
+<!-- This project demonstrates the complete lifecycle of AI security: -->
+
+GolKotha AI is designed to demonstrate an incremental AI security lifecycle:
+
+```text
+Machine Learning
+       ↓
+Explainability
+       ↓
+Adversarial Testing
+       ↓
+Security Evaluation
+       ↓
+Retrieval-Augmented Generation
+       ↓
+Grounded Security Recommendations
+       ↓
+Evaluation + Monitoring
+```
+
+<!-- 1. Train a machine learning model.
 2. Explain how the model makes decisions.
 3. Attack the model using adversarial techniques.
 4. Measure the impact of the attack.
 5. Retrieve trusted security guidance.
-6. Generate grounded AI security recommendations.
+6. Generate grounded AI security recommendations. -->
+
+The project intentionally seperates these capabilities so each security concept can be implemented, tested, and evaluated independently.
 
 ---
 
-## Roadmap
+# Roadmap
 
-* Complete RAG implementation
-* Build vector database
-* Implement document ingestion pipeline
-* Add embedding generation
-* Implement semantic retrieval
-* Add citation-aware recommendation generation
-* Expand adversarial attack library
-* Add additional explainability techniques
-* Improve evaluation dashboards
+### Current
+
+- Complete RAG monitoring and implementation
+- Improve feedback analytics
+- Expand automated testing
+
+### Next
+
+- Implement SHAP explainability
+- Implement FGSM adversarial testing
+- Compare baseline and adversarial predictions
+- Calculate attack success metrics
+
+### Future
+
+- Additional adversarial attacks
+- Additional AI security knowledge sources
+- Retrieval quality evaluation
+- Automated RAG evaluation
+- Additional model types
+- Enhanced security dashbaords
+- A short demonstration that will covers:
+        
+        - Starting GolKotha AI
+        - Running the baseline XGBoost model
+        - Reviewing prediction probabilites
+        - Generating a RAG security assessment
+        - Reviewing security findings and mitigations
+        - Inspecting grounded citations
+        - Recording user feedback
+        - Reviewing RAG evaluation and monitoring
 
 ---
-
-# Demo
 
 # Disclaimer
 
-## License
+GolKotha AI is an educational and research project.
+
+Security assessments generated by the application should not be interpreted as production security certifications or guarantees of model robustness.
+
+---
+
+# License
 
 This repository is intended for educational and research purposes.
